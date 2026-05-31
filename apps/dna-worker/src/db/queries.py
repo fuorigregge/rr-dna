@@ -86,6 +86,25 @@ def upsert_haplogroup(
         )
 
 
+def upsert_neanderthal_result(conn: psycopg.Connection, vcf_file_id: str, r: dict):
+    with conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO "NeanderthalResult"
+                 (id, "vcfFileId", "panelSites", "coveredSites", "archaicAlleles",
+                  "observedFraction", "expectedFraction", "relativeLoad", "estPercent")
+               VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s, %s, %s)
+               ON CONFLICT ("vcfFileId") DO UPDATE SET
+                 "panelSites" = EXCLUDED."panelSites", "coveredSites" = EXCLUDED."coveredSites",
+                 "archaicAlleles" = EXCLUDED."archaicAlleles",
+                 "observedFraction" = EXCLUDED."observedFraction",
+                 "expectedFraction" = EXCLUDED."expectedFraction",
+                 "relativeLoad" = EXCLUDED."relativeLoad", "estPercent" = EXCLUDED."estPercent"
+            """,
+            (vcf_file_id, r["panel_sites"], r["covered_sites"], r["archaic_alleles"],
+             r["observed_fraction"], r["expected_fraction"], r["relative_load"], r["est_percent"]),
+        )
+
+
 def upsert_pharmaco_result(
     conn: psycopg.Connection, vcf_file_id: str, gene: str, diplotype: str | None,
     phenotype: str | None, drugs: str | None, confidence: str | None = None,

@@ -3,6 +3,7 @@ import { AncestryService } from './ancestry.service';
 import { AncestryMarkerObject, PaginatedAncestryMarkers } from './dto/ancestry-marker.object';
 import { AncestryAffinityObject } from './dto/ancestry-affinity.object';
 import { HaplogroupObject } from './dto/haplogroup.object';
+import { NeanderthalResultObject } from './dto/neanderthal.object';
 import { PaginationInput } from '../../common/dto/pagination.input';
 
 @Resolver(() => AncestryMarkerObject)
@@ -25,5 +26,10 @@ export class AncestryResolver {
   @Query(() => [HaplogroupObject], { name: 'haplogroups' })
   async haplogroups(@Args('vcfFileId') vcfFileId: string) {
     return this.ancestryService.findHaplogroups(vcfFileId);
+  }
+
+  @Query(() => NeanderthalResultObject, { name: 'neanderthal', nullable: true })
+  async neanderthal(@Args('vcfFileId') vcfFileId: string) {
+    return this.ancestryService.findNeanderthal(vcfFileId);
   }
 }

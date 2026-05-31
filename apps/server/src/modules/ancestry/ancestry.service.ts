@@ -45,6 +45,10 @@ export class AncestryService {
     });
   }
 
+  async findNeanderthal(vcfFileId: string) {
+    return this.prisma.neanderthalResult.findUnique({ where: { vcfFileId } });
+  }
+
   async affinity(vcfFileId: string, minMarkers: number = MIN_AFFINITY_MARKERS) {
     // Log-verosimiglianza del genotipo per popolazione (modello HWE) su tutti i
     // siti gnomAD che il soggetto porta. Tutte le popolazioni sono valutate sullo

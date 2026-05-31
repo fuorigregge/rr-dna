@@ -20,6 +20,57 @@ const AFFINITY_QUERY = `query($vcfFileId: String!) { ancestryAffinity(vcfFileId:
 const MARKERS_QUERY = `query($vcfFileId: String!, $pagination: PaginationInput) { ancestryMarkers(vcfFileId: $vcfFileId, pagination: $pagination) { items { id variantId population frequency metadata } total hasMore } }`;
 // Aplogruppi diretti (mtDNA materno, Y paterno) calcolati con HaploGrep/yhaplo.
 const HAPLOGROUPS_QUERY = `query($vcfFileId: String!) { haplogroups(vcfFileId: $vcfFileId) { lineage haplogroup detail quality source interpretation } }`;
+const NEANDERTHAL_QUERY = `query($vcfFileId: String!) { neanderthal(vcfFileId: $vcfFileId) { estPercent relativeLoad archaicAlleles coveredSites panelSites observedFraction expectedFraction } }`;
+
+function NeanderthalCard({ n }: { n: any }) {
+  if (!n) return null;
+  const relPct = (n.relativeLoad - 1) * 100;
+  const above = relPct >= 0;
+  // barra: posiziona l'utente rispetto alla media europea (centro), range ~0.7–1.3×
+  const clamp = Math.max(0.7, Math.min(1.3, n.relativeLoad));
+  const leftPct = ((clamp - 0.7) / 0.6) * 100;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Eredità neandertaliana 🦴</CardTitle>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Stima della frazione di DNA neandertaliano dal pannello di SNP introgressi validati
+          (Vernot &amp; Akey 2016, popolazione europea — metodo S* con filtro outgroup africano),
+          risolto sul tuo genoma.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-end gap-6 flex-wrap">
+          <div>
+            <div className="text-3xl font-bold">{n.estPercent.toFixed(2)}%</div>
+            <div className="text-xs text-muted-foreground">del genoma, stima calibrata</div>
+          </div>
+          <div className={above ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}>
+            <div className="text-lg font-semibold">{above ? '+' : ''}{relPct.toFixed(1)}%</div>
+            <div className="text-xs text-muted-foreground">rispetto alla media europea</div>
+          </div>
+        </div>
+        {/* barra relativa alla media europea */}
+        <div>
+          <div className="relative h-2 rounded-full bg-gradient-to-r from-emerald-400/40 via-sky-400/30 to-amber-400/50">
+            {/* media europea al centro */}
+            <div className="absolute top-1/2 -translate-y-1/2 h-3 w-0.5 bg-muted-foreground/60" style={{ left: '50%' }} />
+            <div className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full bg-foreground border-2 border-background shadow"
+              style={{ left: `calc(${leftPct}% - 7px)` }} title={`${n.relativeLoad.toFixed(2)}× la media`} />
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <span>meno arcaico</span><span>media EU</span><span>più arcaico</span>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
+          {n.archaicAlleles.toLocaleString('it-IT')} alleli arcaici su {n.coveredSites.toLocaleString('it-IT')} tag-SNP
+          coperti (frazione {(n.observedFraction * 100).toFixed(2)}% vs media EU {(n.expectedFraction * 100).toFixed(2)}%).
+          Gli europei stanno tipicamente ~1,5–2,2%. È una stima su marcatori validati, non una deconvoluzione genome-wide.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 const POP_COLORS: Record<string, string> = {
   'European': 'hsl(220, 70%, 55%)',
@@ -56,6 +107,14 @@ function AncestryPage() {
     staleTime: 30_000,
   });
   const haplogroups = haploData?.haplogroups ?? [];
+
+  const { data: neanderData } = useQuery({
+    queryKey: ['neanderthal', activeFile?.id],
+    queryFn: () => gqlClient.request<any>(NEANDERTHAL_QUERY, { vcfFileId: activeFile?.id }),
+    enabled: !!activeFile,
+    staleTime: 30_000,
+  });
+  const neanderthal = neanderData?.neanderthal ?? null;
 
   const [page, setPage] = useState(0);
   useEffect(() => { setPage(0); }, [activeFile?.id]);
@@ -108,6 +167,8 @@ function AncestryPage() {
       </div>
 
       <AiSummaryCard />
+
+      <NeanderthalCard n={neanderthal} />
 
       {/* Aplogruppi diretti (materno mtDNA + paterno Y) */}
       {haplogroups.length > 0 && (

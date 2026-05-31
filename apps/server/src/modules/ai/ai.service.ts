@@ -484,6 +484,12 @@ Concentrati su:
       source: h.source,
     }));
 
+    // Eredità neandertaliana (pannello tag-SNP introgressi Vernot 2016, EUR).
+    const nean = await this.prisma.neanderthalResult.findUnique({ where: { vcfFileId } });
+    const neanBlock = nean
+      ? `\n\nEREDITÀ NEANDERTALIANA — stima ~${nean.estPercent.toFixed(2)}% del genoma (carico relativo ${nean.relativeLoad.toFixed(2)}× la media europea, ${((nean.relativeLoad - 1) * 100).toFixed(0)}% ${nean.relativeLoad >= 1 ? 'sopra' : 'sotto'} la media; ${nean.archaicAlleles} alleli arcaici su ${nean.coveredSites} tag-SNP introgressi). Gli europei stanno tipicamente ~1,5–2,2%. Dedica un breve cenno in una sezione "## Eredità neandertaliana": è una stima su marcatori validati (S* + outgroup), non una deconvoluzione genome-wide. Tono curioso, non clinico.`
+      : '';
+
     return `Sei un genetista delle popolazioni che spiega risultati di ancestry a un programmatore (non medico). Rispondi in italiano e in formato Markdown.
 
 IMPORTANTE: Il tuo output deve essere strutturato così:
@@ -495,7 +501,7 @@ Analizza questi dati di affinità ancestrale (${totalMarkers} marcatori valutati
 ${JSON.stringify(affinity, null, 2)}
 
 APLOGRUPPI DIRETTI (le due linee dirette del soggetto). APPROFONDISCI questi in una sezione dedicata:
-${JSON.stringify(haploJson, null, 2)}
+${JSON.stringify(haploJson, null, 2)}${neanBlock}
 
 Concentrati su:
 - Popolazioni col punteggio relativo più alto (miglior adattamento): cosa significa in termini di origini ancestrali

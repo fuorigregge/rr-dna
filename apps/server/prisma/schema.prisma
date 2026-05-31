@@ -80,6 +80,7 @@ model VcfFile {
   acmgResults         AcmgResult[]
   carrierPanelResults CarrierPanelResult[]
   prsResults          PrsResult[]
+  neanderthal         NeanderthalResult?
 }
 
 model PrsResult {
@@ -181,6 +182,20 @@ model Haplogroup {
 
   @@unique([vcfFileId, lineage])
   @@index([vcfFileId])
+}
+
+model NeanderthalResult {
+  id               String @id @default(uuid())
+  vcfFileId        String @unique
+  panelSites       Int
+  coveredSites     Int
+  archaicAlleles   Int
+  observedFraction Float
+  expectedFraction Float
+  relativeLoad     Float
+  estPercent       Float
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
 }
 
 model TraitPanelResult {

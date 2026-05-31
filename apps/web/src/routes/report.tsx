@@ -28,6 +28,7 @@ const REPORT_QUERY = `
     traitCounts(vcfFileId: $sid) { total metabolism physical cognitive }
     affinity: ancestryAffinity(vcfFileId: $sid) { population relativeScore markerCount }
     haplogroups(vcfFileId: $sid) { id lineage haplogroup detail quality source interpretation }
+    neanderthal(vcfFileId: $sid) { estPercent relativeLoad archaicAlleles coveredSites observedFraction expectedFraction }
     prsResults(vcfFileId: $vcfFileId) { id traitKey trait pgsId zScore percentile rawScore calibrationSource }
     s_overview: aiSummary(vcfFileId: $sid, type: "overview") { summary detail createdAt }
     s_diseases: aiSummary(vcfFileId: $sid, type: "diseases") { summary detail }
@@ -677,6 +678,21 @@ function ReportPage() {
               {sec.type === 'pharma' && (data.pharmacoPanel?.length ?? 0) > 0 && <PharmaPanelReport rows={data.pharmacoPanel} />}
               {sec.type === 'ancestry' && (
                 <>
+                  {data.neanderthal && (
+                    <div className="rounded-lg border border-border px-3 py-2">
+                      <div className="flex items-baseline gap-3 flex-wrap">
+                        <span className="text-sm font-semibold">Eredità neandertaliana</span>
+                        <span className="text-lg font-bold">{data.neanderthal.estPercent.toFixed(2)}%</span>
+                        <span className="text-xs" style={{ color: data.neanderthal.relativeLoad >= 1 ? 'hsl(35,92%,38%)' : 'hsl(142,71%,32%)' }}>
+                          {data.neanderthal.relativeLoad >= 1 ? '+' : ''}{((data.neanderthal.relativeLoad - 1) * 100).toFixed(1)}% vs media europea
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {data.neanderthal.archaicAlleles.toLocaleString('it-IT')} alleli arcaici su {data.neanderthal.coveredSites.toLocaleString('it-IT')} tag-SNP introgressi
+                        (Vernot &amp; Akey 2016, S*); frazione {(data.neanderthal.observedFraction * 100).toFixed(2)}% vs media EU {(data.neanderthal.expectedFraction * 100).toFixed(2)}%. Stima calibrata, non deconvoluzione genome-wide.
+                      </p>
+                    </div>
+                  )}
                   <HaplogroupLineages rows={data.haplogroups ?? []} />
                   {(data.affinity?.length ?? 0) > 0 && <AncestryChart affinity={data.affinity} />}
                 </>

@@ -15,3 +15,8 @@ src/data/genome/*
 # Tengo solo lo script tracciato; i full sono archiviati su HD esterno Maxtor.
 src/data/gnomad/*
 !src/data/gnomad/download_gnomad.sh
+
+# Neanderthal: pannello tag-SNP introgressi (Vernot 2016) liftato a hg38, derivato.
+# Tengo solo lo script di build; il pannello e i raw stanno su Maxtor.
+src/data/neanderthal/*
+!src/data/neanderthal/build_panel.py

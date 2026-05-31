@@ -5,7 +5,7 @@ from src.db.connection import get_connection
 from src.db.queries import (
     insert_variants_batch, update_vcf_file, upsert_chromosome_summary,
     upsert_trait_panel_result, upsert_pharmaco_result, upsert_acmg_result,
-    upsert_carrier_result, upsert_prs_result,
+    upsert_carrier_result, upsert_prs_result, upsert_neanderthal_result,
 )
 from src.worker.trait_panel import (
     TRAIT_PANEL, PANEL_BY_CHROM, record_covers, classify_covering, STATE_RANK,
@@ -20,6 +20,11 @@ from src.worker.carrier_panel import (
     CARRIER_PANEL, CARRIER_BY_CHROM, classify_carrier, STATE_RANK as CARRIER_STATE_RANK,
 )
 from src.worker.pgs_panel import get_pgs_index, call_all_pgs, loaded_scores as loaded_pgs_scores
+from src.worker.neanderthal_panel import (
+    is_available as neanderthal_available,
+    observe_record as observe_neanderthal_record,
+    summarize as neanderthal_summarize,
+)
 import bisect
 from src.worker.call_confidence import assess_confidence
 import uuid
@@ -370,6 +375,8 @@ def parse_vcf(vcf_file_id: str, file_path: str, progress_callback=None) -> dict:
     pgs_obs: dict[tuple, dict] = {}
     pgs_ref: set[tuple] = set()
     pgs_index = get_pgs_index() if loaded_pgs_scores() else {}
+    neander_obs: dict[tuple, tuple] = {}
+    neander_on = neanderthal_available()
 
     with get_connection() as conn:
         for record in vcf:
@@ -382,6 +389,8 @@ def parse_vcf(vcf_file_id: str, file_path: str, progress_callback=None) -> dict:
             _observe_carrier_record(carrier_results, record)
             if pgs_index:
                 _observe_pgs_record(pgs_obs, pgs_ref, pgs_index, record)
+            if neander_on:
+                observe_neanderthal_record(neander_obs, record)
 
             # Skip gVCF reference blocks (no ALT) first — they are the bulk of a WGS gVCF.
             if not record.ALT:
@@ -467,6 +476,10 @@ def parse_vcf(vcf_file_id: str, file_path: str, progress_callback=None) -> dict:
         persist_carrier_results(conn, vcf_file_id, carrier_results)
         if pgs_index:
             persist_pgs_results(conn, vcf_file_id, pgs_obs, pgs_ref)
+        if neander_on:
+            neander = neanderthal_summarize(neander_obs)
+            if neander:
+                upsert_neanderthal_result(conn, vcf_file_id, neander)
 
         conn.commit()
 

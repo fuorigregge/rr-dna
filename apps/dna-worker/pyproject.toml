@@ -13,6 +13,8 @@ dependencies = [
     "redis>=5.2",
     "httpx>=0.28",
     "pyfaidx>=0.9.0.4",
+    "gdown>=6.1.0",
+    "pyliftover>=0.4.1",
 ]
 
 [project.optional-dependencies]
