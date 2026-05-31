@@ -30,12 +30,12 @@ const REPORT_QUERY = `
     haplogroups(vcfFileId: $sid) { id lineage haplogroup detail quality source interpretation }
     prsResults(vcfFileId: $vcfFileId) { id traitKey trait pgsId zScore percentile rawScore calibrationSource }
     s_overview: aiSummary(vcfFileId: $sid, type: "overview") { summary detail createdAt }
-    s_diseases: aiSummary(vcfFileId: $sid, type: "diseases") { summary }
-    s_prs: aiSummary(vcfFileId: $sid, type: "prs") { summary }
-    s_pharma: aiSummary(vcfFileId: $sid, type: "pharma") { summary }
-    s_carrier: aiSummary(vcfFileId: $sid, type: "carrier") { summary }
-    s_traits: aiSummary(vcfFileId: $sid, type: "traits") { summary }
-    s_ancestry: aiSummary(vcfFileId: $sid, type: "ancestry") { summary }
+    s_diseases: aiSummary(vcfFileId: $sid, type: "diseases") { summary detail }
+    s_prs: aiSummary(vcfFileId: $sid, type: "prs") { summary detail }
+    s_pharma: aiSummary(vcfFileId: $sid, type: "pharma") { summary detail }
+    s_carrier: aiSummary(vcfFileId: $sid, type: "carrier") { summary detail }
+    s_traits: aiSummary(vcfFileId: $sid, type: "traits") { summary detail }
+    s_ancestry: aiSummary(vcfFileId: $sid, type: "ancestry") { summary detail }
   }
 `;
 
@@ -601,6 +601,7 @@ function ReportPage() {
           .no-print { display: none !important; }
           nav { display: none !important; }
           .report-section { break-inside: avoid; }
+          .appendix-start { break-before: page; }
         }
         @page { margin: 1.4cm; }
       `}</style>
@@ -707,6 +708,28 @@ function ReportPage() {
         </section>
 
         <MethodologyNotes />
+
+        {/* Appendici: analisi AI completa per categoria (versione estesa) */}
+        {SECTIONS.some((sec) => data[`s_${sec.type}`]?.detail || data[`s_${sec.type}`]?.summary) && (
+          <section className="appendix-start space-y-3 border-t-2 border-border pt-5">
+            <h2 className="text-xl font-bold">Appendici — analisi AI completa per categoria</h2>
+            <p className="text-xs text-muted-foreground">
+              Versione estesa dei riassunti AI di ciascuna sezione (nel corpo del referto compare la sintesi breve).
+              Generata da un modello linguistico a partire esclusivamente dai dati delle rispettive sezioni.
+            </p>
+            {SECTIONS.map((sec) => {
+              const s = data[`s_${sec.type}`];
+              const text = s?.detail || s?.summary;
+              if (!text) return null;
+              return (
+                <section key={sec.type} className="report-section space-y-1 pt-2">
+                  <h3 className="text-base font-semibold border-b border-border pb-1">Appendice · {sec.label}</h3>
+                  <Markdown>{text}</Markdown>
+                </section>
+              );
+            })}
+          </section>
+        )}
 
         <footer className="border-t border-border pt-4 text-xs text-muted-foreground">
           Referto informativo generato da rr-dna a scopo divulgativo. Non costituisce una diagnosi medica:
