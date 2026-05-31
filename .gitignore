@@ -1,0 +1,44 @@
+node_modules/
+dist/
+.env
+*.env.local
+.turbo/
+.superpowers/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+uv.lock
+
+# Database
+pgdata/
+
+# Generated
+routeTree.gen.ts
+*.tsbuildinfo
+.tanstack/
+
+# Build artifacts (ClinVar/PharmGKB/gnomAD)
+clinvar_db.json.gz
+pharmgkb_db.json.gz
+clinvar_coords.json.gz
+ancestry_gnomad_db.json.gz
+variant_summary.txt.gz
+
+# Uploads
+apps/server/uploads/
+
+# Test files
+test-sample.vcf
+
+# Claude Code
+.claude/
+
+# IDE
+.idea/
+.vscode/
+
+# Documenti di design/planning interni (artefatti workflow, non parte del tool)
+docs/superpowers/

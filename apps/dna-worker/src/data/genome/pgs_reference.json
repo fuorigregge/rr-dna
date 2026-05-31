@@ -1,0 +1,242 @@
+{
+  "PGS000004": {
+    "mean": -0.12209880715705763,
+    "sd": 0.5773773742616966,
+    "n_samples": 503,
+    "markers_resolved": 284,
+    "markers_unseen_in_kg": 30,
+    "trait_key": "BC_PGS"
+  },
+  "PGS000018": {
+    "mean": -0.3914504791559368,
+    "sd": 0.5619871487127025,
+    "n_samples": 503,
+    "markers_resolved": 1726171,
+    "markers_unseen_in_kg": 21948,
+    "trait_key": "CAD_PGS"
+  },
+  "PGS000014": {
+    "mean": 55.654941031740464,
+    "sd": 0.11845244374036325,
+    "n_samples": 503,
+    "markers_resolved": 6746328,
+    "markers_unseen_in_kg": 180461,
+    "trait_key": "T2D_PGS"
+  },
+  "PGS000027": {
+    "mean": 39.00457303205458,
+    "sd": 0.1429328989420698,
+    "n_samples": 503,
+    "markers_resolved": 2077491,
+    "markers_unseen_in_kg": 24480,
+    "trait_key": "BMI_PGS"
+  },
+  "PGS000054": {
+    "mean": 6.497815109343936,
+    "sd": 0.48977002450407936,
+    "n_samples": 503,
+    "markers_resolved": 21,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "ALZ_PGS"
+  },
+  "PGS000020": {
+    "mean": 2.217797634194829,
+    "sd": 0.5996491921866988,
+    "n_samples": 503,
+    "markers_resolved": 7428,
+    "markers_unseen_in_kg": 84,
+    "trait_key": "T2D_DGRS"
+  },
+  "PGS000043": {
+    "mean": 25.844227236580526,
+    "sd": 1.2067423220994355,
+    "n_samples": 503,
+    "markers_resolved": 283,
+    "markers_unseen_in_kg": 15,
+    "trait_key": "VTE_PGS"
+  },
+  "PGS000122": {
+    "mean": 25.17296222664016,
+    "sd": 4.289325276457311,
+    "n_samples": 503,
+    "markers_resolved": 33,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "BMD_PGS"
+  },
+  "PGS000040": {
+    "mean": 0.09259769383697813,
+    "sd": 0.15297136765139138,
+    "n_samples": 503,
+    "markers_resolved": 223,
+    "markers_unseen_in_kg": 5,
+    "trait_key": "CD_PGS"
+  },
+  "PGS000346": {
+    "mean": 0.8671280318091451,
+    "sd": 0.527758304149832,
+    "n_samples": 503,
+    "markers_resolved": 245,
+    "markers_unseen_in_kg": 42,
+    "trait_key": "BC_ER_NEG_PGS"
+  },
+  "PGS000007": {
+    "mean": -0.37719761431411486,
+    "sd": 0.43634720649479486,
+    "n_samples": 503,
+    "markers_resolved": 3485,
+    "markers_unseen_in_kg": 372,
+    "trait_key": "BC_PRS3820"
+  },
+  "PGS000084": {
+    "mean": 19.386850477085368,
+    "sd": 1.6317446433605653,
+    "n_samples": 503,
+    "markers_resolved": 154,
+    "markers_unseen_in_kg": 8,
+    "trait_key": "PROSTATE_PGS"
+  },
+  "PGS000351": {
+    "mean": 1.9366904146393227,
+    "sd": 0.2961599073695784,
+    "n_samples": 503,
+    "markers_resolved": 26,
+    "markers_unseen_in_kg": 4,
+    "trait_key": "OVARIAN_PGS"
+  },
+  "PGS000118": {
+    "mean": 3.5761809145129226,
+    "sd": 0.5140509813509233,
+    "n_samples": 503,
+    "markers_resolved": 29,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "MELANOMA_PGS"
+  },
+  "PGS000119": {
+    "mean": 4.708097422632207,
+    "sd": 0.5179075813795422,
+    "n_samples": 503,
+    "markers_resolved": 32,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "BCC_PGS"
+  },
+  "PGS000731": {
+    "mean": -1.0316477137176936,
+    "sd": 0.3295139719630506,
+    "n_samples": 503,
+    "markers_resolved": 12,
+    "markers_unseen_in_kg": 2,
+    "trait_key": "SCC_PGS"
+  },
+  "PGS003386": {
+    "mean": 0.46363541999326063,
+    "sd": 0.34458673016123637,
+    "n_samples": 503,
+    "markers_resolved": 60,
+    "markers_unseen_in_kg": 1,
+    "trait_key": "CRC_PGS"
+  },
+  "PGS000663": {
+    "mean": 4.163566003976143,
+    "sd": 0.5130189681974872,
+    "n_samples": 503,
+    "markers_resolved": 22,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "PANC_PGS"
+  },
+  "PGS000162": {
+    "mean": 5.288993007067595,
+    "sd": 1.4931864613620949,
+    "n_samples": 503,
+    "markers_resolved": 6,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "THYROID_PGS"
+  },
+  "PGS000038": {
+    "mean": 0.017037574552683964,
+    "sd": 0.31871108024197387,
+    "n_samples": 503,
+    "markers_resolved": 84,
+    "markers_unseen_in_kg": 6,
+    "trait_key": "STROKE_PGS"
+  },
+  "PGS000709": {
+    "mean": -0.1369711298276967,
+    "sd": 0.6306444160248634,
+    "n_samples": 503,
+    "markers_resolved": 173481,
+    "markers_unseen_in_kg": 9921,
+    "trait_key": "HF_PGS"
+  },
+  "PGS001263": {
+    "mean": -0.3847516901464412,
+    "sd": 0.42240398922660516,
+    "n_samples": 503,
+    "markers_resolved": 1865,
+    "markers_unseen_in_kg": 223,
+    "trait_key": "AFLUTTER_PGS"
+  },
+  "PGS000661": {
+    "mean": 5.350488667992047,
+    "sd": 0.3566684957868686,
+    "n_samples": 503,
+    "markers_resolved": 82,
+    "markers_unseen_in_kg": 2,
+    "trait_key": "LDL_PGS"
+  },
+  "PGS000022": {
+    "mean": 6.217411589061631,
+    "sd": 0.7510143895156863,
+    "n_samples": 503,
+    "markers_resolved": 27,
+    "markers_unseen_in_kg": 1,
+    "trait_key": "T1D_PGS"
+  },
+  "PGS000131": {
+    "mean": 0.18591451292246522,
+    "sd": 0.04664986397489096,
+    "n_samples": 503,
+    "markers_resolved": 18,
+    "markers_unseen_in_kg": 1,
+    "trait_key": "HBA1C_PGS"
+  },
+  "PGS000126": {
+    "mean": -0.5936123260437374,
+    "sd": 0.3427417092943271,
+    "n_samples": 503,
+    "markers_resolved": 112,
+    "markers_unseen_in_kg": 2,
+    "trait_key": "URATE_PGS"
+  },
+  "PGS001249": {
+    "mean": -0.20617101424667597,
+    "sd": 0.47873475097695867,
+    "n_samples": 503,
+    "markers_resolved": 1522,
+    "markers_unseen_in_kg": 275,
+    "trait_key": "GOUT_PGS"
+  },
+  "PGS002628": {
+    "mean": -7.061777877789992,
+    "sd": 0.13540957052547178,
+    "n_samples": 503,
+    "markers_resolved": 187066,
+    "markers_unseen_in_kg": 19227,
+    "trait_key": "ASTHMA_PGS"
+  },
+  "PGS000124": {
+    "mean": -0.31002584493041735,
+    "sd": 0.8233977664536312,
+    "n_samples": 503,
+    "markers_resolved": 102,
+    "markers_unseen_in_kg": 2,
+    "trait_key": "IOP_PGS"
+  },
+  "PGS000350": {
+    "mean": 12.168986083499005,
+    "sd": 2.0707776042492174,
+    "n_samples": 503,
+    "markers_resolved": 12,
+    "markers_unseen_in_kg": 0,
+    "trait_key": "GLAUCOMA_PGS"
+  }
+}

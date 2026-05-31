@@ -1,0 +1,10 @@
+{
+  "name": "@rr-dna/eslint-config",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8",
+    "@typescript-eslint/parser": "^8",
+    "eslint-config-prettier": "^10"
+  }
+}

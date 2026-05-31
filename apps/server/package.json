@@ -1,0 +1,56 @@
+{
+  "name": "@rr-dna/server",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main",
+    "lint": "eslint src/",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.4.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@nestjs/apollo": "^13",
+    "@nestjs/bullmq": "^11",
+    "@nestjs/common": "^11",
+    "@nestjs/core": "^11",
+    "@nestjs/graphql": "^13",
+    "@nestjs/platform-express": "^11",
+    "@nestjs/throttler": "^6",
+    "@prisma/client": "^6",
+    "@rr-dna/claude-ai": "workspace:^",
+    "@types/multer": "^2.1.0",
+    "bullmq": "^5",
+    "class-transformer": "^0.5",
+    "class-validator": "^0.14",
+    "dotenv": "^17",
+    "graphql": "^16",
+    "graphql-scalars": "^1",
+    "graphql-type-json": "^0.3.2",
+    "ioredis": "^5",
+    "multer": "^2.1.1",
+    "reflect-metadata": "^0.2",
+    "rxjs": "^7"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11",
+    "@nestjs/schematics": "^11",
+    "@nestjs/testing": "^11",
+    "@rr-dna/tsconfig": "workspace:*",
+    "@types/graphql-type-json": "^0.3.5",
+    "prisma": "^6",
+    "ts-node": "^10",
+    "typescript": "^5",
+    "vitest": "^3"
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+}

@@ -1,0 +1,355 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VcfFileStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum Zygosity {
+  HETEROZYGOUS
+  HOMOZYGOUS
+}
+
+enum AnnotationSource {
+  CLINVAR
+  VEP
+  SNPSIFT
+  GNOMAD
+  PHARMGKB
+}
+
+enum VariantImpact {
+  HIGH
+  MODERATE
+  LOW
+  MODIFIER
+}
+
+enum ClinicalSignificance {
+  PATHOGENIC
+  LIKELY_PATHOGENIC
+  UNCERTAIN
+  LIKELY_BENIGN
+  BENIGN
+}
+
+enum InheritancePattern {
+  AUTOSOMAL_RECESSIVE
+  AUTOSOMAL_DOMINANT
+  X_LINKED
+}
+
+enum TraitCategory {
+  METABOLISM
+  PHYSICAL
+  COGNITIVE
+}
+
+enum TraitPanelState {
+  CARRIED
+  REFERENCE
+  NOT_COVERED
+}
+
+model VcfFile {
+  id            String        @id @default(uuid())
+  filename      String
+  filePath      String
+  uploadDate    DateTime      @default(now())
+  status        VcfFileStatus @default(PROCESSING)
+  totalVariants Int           @default(0)
+  snpCount      Int           @default(0)
+  indelCount    Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  variants            Variant[]
+  chromosomeSummaries ChromosomeSummary[]
+  aiSummaries         AiSummary[]
+  traitPanelResults   TraitPanelResult[]
+  haplogroups         Haplogroup[]
+  pharmacoResults     PharmacoResult[]
+  acmgResults         AcmgResult[]
+  carrierPanelResults CarrierPanelResult[]
+  prsResults          PrsResult[]
+}
+
+model PrsResult {
+  id             String  @id @default(uuid())
+  vcfFileId      String
+  traitKey       String  // T2D | CAD | BC_PGS | ...
+  trait          String
+  label          String
+  description    String?
+  pgsId             String? // es. PGS000018 quando la fonte è PGS Catalog
+  source            String? // "curated" | "pgs_catalog"
+  calibrationSource String? // "empirical_1000G_EUR" | "hardy_weinberg_file_AF" | null
+  rawScore          Float
+  expectedMean      Float?
+  expectedSd        Float?
+  zScore            Float?
+  percentile        Float?
+  markersUsed    Int
+  markersTotal   Int
+  interpretation String?
+  metadata       Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, traitKey])
+  @@index([vcfFileId])
+}
+
+model CarrierPanelResult {
+  id             String    @id @default(uuid())
+  vcfFileId      String
+  rsId           String
+  gene           String
+  variantName    String
+  condition      String
+  inheritance    String?
+  state          String // CLEAR | CARRIER | AFFECTED | NOT_COVERED
+  genotype       String?
+  zygosity       Zygosity?
+  interpretation String?
+  confidence     String?
+  metadata       Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, rsId])
+  @@index([vcfFileId])
+}
+
+model AcmgResult {
+  id             String    @id @default(uuid())
+  vcfFileId      String
+  rsId           String
+  gene           String
+  variantName    String
+  condition      String
+  inheritance    String?
+  state          String // CARRIED | NOT_CARRIED | NOT_COVERED
+  genotype       String?
+  zygosity       Zygosity?
+  interpretation String?
+  confidence     String?
+  metadata       Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, rsId])
+  @@index([vcfFileId])
+}
+
+model PharmacoResult {
+  id         String  @id @default(uuid())
+  vcfFileId  String
+  gene       String
+  diplotype  String?
+  phenotype  String?
+  drugs      String?
+  confidence String?
+  metadata   Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, gene])
+  @@index([vcfFileId])
+}
+
+model Haplogroup {
+  id             String  @id @default(uuid())
+  vcfFileId      String
+  lineage        String  // "MT" (materna) | "Y" (paterna)
+  haplogroup     String
+  detail         String?
+  quality        Float?
+  source         String?
+  interpretation String?
+  metadata       Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, lineage])
+  @@index([vcfFileId])
+}
+
+model TraitPanelResult {
+  id             String          @id @default(uuid())
+  vcfFileId      String
+  rsId           String
+  gene           String?
+  trait          String
+  category       TraitCategory?
+  state          TraitPanelState
+  genotype       String?
+  zygosity       Zygosity?
+  interpretation String?
+  confidence     String?
+  metadata       Json?
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, rsId])
+  @@index([vcfFileId])
+}
+
+model Variant {
+  id         String    @id @default(uuid())
+  vcfFileId  String
+  chromosome String
+  position   Int
+  rsId       String?
+  ref        String
+  alt        String
+  quality    Float?
+  filter     String?
+  genotype   String?
+  zygosity   Zygosity?
+  depth         Int?
+  vaf           Float?
+  lowConfidence Boolean   @default(false)
+  notes         String?   @db.Text
+
+  vcfFile     VcfFile              @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+  annotations VariantAnnotation[]
+  diseases    DiseaseRisk[]
+  pharma      Pharmacogenomics[]
+  carrier     CarrierStatus[]
+  ancestry    AncestryMarker[]
+  traits      PhenotypeTrait[]
+
+  @@index([vcfFileId])
+  @@index([chromosome])
+  @@index([rsId])
+  @@index([vcfFileId, chromosome])
+  @@index([vcfFileId, chromosome, position])
+}
+
+model VariantAnnotation {
+  id          String           @id @default(uuid())
+  variantId   String
+  source      AnnotationSource
+  gene        String?
+  consequence String?
+  impact      VariantImpact?
+  data        Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+  @@index([source])
+}
+
+model DiseaseRisk {
+  id            String                 @id @default(uuid())
+  variantId     String
+  disease       String
+  significance  ClinicalSignificance
+  source        String
+  evidenceLevel String?
+  metadata      Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+  @@index([significance])
+}
+
+model Pharmacogenomics {
+  id                String @id @default(uuid())
+  variantId         String
+  drug              String
+  effect            String?
+  metabolizerStatus String?
+  source            String
+  evidenceLevel     String?
+  metadata          Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+}
+
+model CarrierStatus {
+  id                 String             @id @default(uuid())
+  variantId          String
+  condition          String
+  inheritancePattern InheritancePattern?
+  carrierType        String?
+  source             String
+  metadata           Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+}
+
+model AncestryMarker {
+  id         String @id @default(uuid())
+  variantId  String
+  haplogroup String?
+  population String?
+  frequency  Float?
+  metadata   Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, population])
+  @@index([variantId])
+}
+
+model PhenotypeTrait {
+  id        String        @id @default(uuid())
+  variantId String
+  trait     String
+  effect    String?
+  category  TraitCategory?
+  source    String
+  metadata  Json?
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+  @@index([category])
+}
+
+model ChromosomeSummary {
+  id                   String @id @default(uuid())
+  vcfFileId            String
+  chromosome           String
+  variantCount         Int    @default(0)
+  snpCount             Int    @default(0)
+  indelCount           Int    @default(0)
+  pathogenicCount      Int    @default(0)
+  pharmacogenomicCount Int    @default(0)
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, chromosome])
+  @@index([vcfFileId])
+}
+
+model AiSummary {
+  id        String   @id @default(uuid())
+  vcfFileId String
+  type      String   // "diseases", "ancestry", "pharma", ecc. — estendibile
+  summary   String   // riassunto breve (header card)
+  detail    String?  // analisi dettagliata MD (drawer)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@unique([vcfFileId, type])
+  @@index([vcfFileId])
+}

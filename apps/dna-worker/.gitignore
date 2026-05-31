@@ -1,0 +1,17 @@
+# Haplogroup tools: ignore downloaded artifacts, keep the setup script tracked.
+tools/*
+!tools/setup.sh
+
+# PGS Catalog scoring files: scaricati al boot del worker via ensure_pgs_catalog,
+# non vanno in git (totale ~150-200 MB con i 5 score attuali).
+src/data/pgs/
+
+# Genome data: GRCh38 FASTA + 1000G subset (multi-GB), tutti scaricabili.
+# Solo pgs_reference.json (piccolo, distribuzione empirica calibrata) va in git.
+src/data/genome/*
+!src/data/genome/pgs_reference.json
+
+# gnomAD v4.1 exomes: subset slim BCF (multi-GB) scaricabili via download_gnomad.sh.
+# Tengo solo lo script tracciato; i full sono archiviati su HD esterno Maxtor.
+src/data/gnomad/*
+!src/data/gnomad/download_gnomad.sh

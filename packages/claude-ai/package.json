@@ -1,0 +1,16 @@
+{
+  "name": "@rr-dna/claude-ai",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@rr-dna/tsconfig": "workspace:*",
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}
