@@ -16,6 +16,10 @@ export const PROTECTIVE_TRAITS: Record<string, string> = {
     'Score protettivo: per la densità minerale ossea un valore BASSO è la direzione sfavorevole ' +
     '(ossa meno dense → maggior rischio di osteoporosi e fratture), al contrario degli score di ' +
     'rischio malattia dove a destare attenzione è un valore alto. Un percentile basso qui NON è rassicurante.',
+  LONGEVITY_PGS:
+    'Score protettivo: un valore ALTO indica più alleli associati alla longevità eccezionale ' +
+    '(tarato su centenari vs anziani, Tesi 2021), un valore BASSO è la direzione sfavorevole — ' +
+    'non un beneficio. L\'effetto resta però piccolo: stile di vita, ambiente e fortuna pesano molto di più.',
 };
 
 export function isProtectiveTrait(traitKey: string | undefined | null): boolean {

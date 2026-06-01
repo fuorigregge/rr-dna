@@ -55,10 +55,17 @@ function isNonDisease(traitKey: string | undefined | null): boolean {
   return !!traitKey && CATEGORY_OF[traitKey] === NON_DISEASE;
 }
 
+// Tratti DAVVERO neutri: alto/basso non è meglio/peggio (altezza, cronotipo).
+// La longevità è non-malattia ma direzionale (alto = favorevole) → protettiva.
+const NEUTRAL_TRAITS = new Set(['HEIGHT_PGS', 'CHRONOTYPE_PGS']);
+function isNeutralTrait(traitKey: string | undefined | null): boolean {
+  return !!traitKey && NEUTRAL_TRAITS.has(traitKey);
+}
+
 function tierColor(z: number | null | undefined, raw: number, traitKey?: string): string {
-  // Tratti non-malattia: colore NEUTRO. Alto/basso non è meglio/peggio, è solo
-  // dove cadi sullo spettro — niente semantica rosso=rischio / verde=protetto.
-  if (isNonDisease(traitKey)) return 'text-teal-600 dark:text-teal-400';
+  // Tratti neutri: colore NEUTRO. Alto/basso non è meglio/peggio, è solo dove
+  // cadi sullo spettro — niente semantica rosso=rischio / verde=protetto.
+  if (isNeutralTrait(traitKey)) return 'text-teal-600 dark:text-teal-400';
   if (z == null) {
     if (raw > 0) return 'text-amber-600 dark:text-amber-400';
     if (raw < 0) return 'text-emerald-600 dark:text-emerald-400';
@@ -81,12 +88,17 @@ function calibrationLabel(src: string | null | undefined, calibrated: boolean): 
   return src;
 }
 
-function PercentileBar({ percentile, neutral }: { percentile: number; neutral?: boolean }) {
+function PercentileBar({ percentile, variant = 'risk' }: { percentile: number; variant?: 'risk' | 'neutral' | 'protective' }) {
   const clamped = Math.max(0, Math.min(100, percentile));
-  // Neutro: gradiente simmetrico (nessun lato "buono"/"cattivo"). Rischio: verde→rosso.
-  const grad = neutral
-    ? 'bg-gradient-to-r from-sky-400/30 via-teal-400/25 to-violet-400/30'
-    : 'bg-gradient-to-r from-emerald-500/30 via-sky-400/30 to-red-500/40';
+  // risk: verde(basso)→rosso(alto), alto = attenzione.
+  // protective: invertito, rosso(basso)→verde(alto), basso = attenzione.
+  // neutral: simmetrico, nessun lato "buono"/"cattivo".
+  const grad =
+    variant === 'neutral'
+      ? 'bg-gradient-to-r from-sky-400/30 via-teal-400/25 to-violet-400/30'
+      : variant === 'protective'
+      ? 'bg-gradient-to-r from-red-500/40 via-sky-400/30 to-emerald-500/30'
+      : 'bg-gradient-to-r from-emerald-500/30 via-sky-400/30 to-red-500/40';
   return (
     <div className={`relative h-2 rounded-full ${grad}`}>
       <div
@@ -100,7 +112,11 @@ function PercentileBar({ percentile, neutral }: { percentile: number; neutral?: 
 
 function PrsRow({ r, expanded, onToggle }: { r: PrsResult; expanded: boolean; onToggle: () => void }) {
   const calibrated = typeof r.percentile === 'number' && typeof r.zScore === 'number';
-  const neutral = isNonDisease(r.traitKey);
+  const barVariant: 'risk' | 'neutral' | 'protective' = isNeutralTrait(r.traitKey)
+    ? 'neutral'
+    : isProtectiveTrait(r.traitKey)
+    ? 'protective'
+    : 'risk';
   return (
     <div className="border-b last:border-b-0 border-border/60">
       <button
@@ -141,7 +157,7 @@ function PrsRow({ r, expanded, onToggle }: { r: PrsResult; expanded: boolean; on
         </div>
         {calibrated && (
           <div className="mt-2">
-            <PercentileBar percentile={r.percentile as number} neutral={neutral} />
+            <PercentileBar percentile={r.percentile as number} variant={barVariant} />
           </div>
         )}
       </button>
@@ -338,9 +354,11 @@ function PrsPage() {
                 </div>
                 {k === 'trait' && (
                   <p className="text-xs text-muted-foreground py-2 leading-snug">
-                    Non sono rischi di malattia: descrivono dove cadi su uno spettro fenotipico
-                    (più alto/basso, più mattiniero/serotino). Score compatti — indicativi sulla
-                    direzione, non predittivi. Il colore è neutro di proposito.
+                    Non sono rischi di malattia. Altezza e cronotipo sono <strong>neutri</strong>
+                    {' '}(alto/basso non è meglio/peggio, solo dove cadi sullo spettro). La
+                    <strong> longevità</strong> ha invece una direzione: un valore basso è la
+                    direzione sfavorevole (segnalata come gli altri tratti protettivi). Score
+                    compatti — indicativi sulla direzione, non predittivi.
                   </p>
                 )}
                 {list.map((r) => (
