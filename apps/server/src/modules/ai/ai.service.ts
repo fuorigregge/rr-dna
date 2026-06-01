@@ -287,6 +287,13 @@ Concentrati su:
       genotipo: t.genotype, interpretazione: t.interpretation,
     }));
 
+    // PRS rilevanti per la salute azionabile: Lp(a) sempre (misurabile), + quelli
+    // marcatamente alti (|z| >= 1.5) che possono valere uno screening/consapevolezza.
+    const prs = await this.prisma.prsResult.findMany({ where: { vcfFileId } });
+    const prsNotable = prs
+      .filter(p => p.traitKey === 'LPA_PGS' || (typeof p.zScore === 'number' && Math.abs(p.zScore) >= 1.5))
+      .map(p => ({ trait: p.trait, percentile: p.percentile, zScore: p.zScore, interpretazione: p.interpretation }));
+
     return `Sei un consulente che sintetizza, per un programmatore (non medico), cosa il SUO DNA e la ricerca suggeriscono su farmaci, integratori, alimenti e stile di vita. Rispondi in italiano e in Markdown.
 
 ETHOS OBBLIGATORIO — onestà sopra l'hype:
@@ -305,6 +312,9 @@ ${JSON.stringify(pharmaJson, null, 2)}
 
 TRATTI dieta / nutrienti / stile di vita (lo stato è il genotipo reale del soggetto):
 ${JSON.stringify(traitsJson, null, 2)}
+
+PRS rilevanti (percentile vs popolazione europea). La Lp(a), se presente, è AZIONABILE: un percentile alto suggerisce Lp(a) sierica elevata → consiglia il dosaggio nel sangue (una-tantum), fattore di rischio cardiovascolare indipendente; nessun farmaco approvato la abbassa → controllare il resto. Gli altri PRS alti: consapevolezza, non diagnosi.
+${JSON.stringify(prsNotable, null, 2)}
 
 Concentrati su:
 - Farmaci: solo le attenzioni reali (fenotipo non normale), inquadrate come "se prescritto X…".

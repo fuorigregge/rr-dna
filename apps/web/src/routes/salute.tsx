@@ -11,9 +11,10 @@ export const Route = createFileRoute('/salute')({ component: SalutePage });
 
 const TRAIT_QUERY = `query($vcfFileId: String!) { traitPanel(vcfFileId: $vcfFileId) { rsId gene trait state genotype interpretation } }`;
 const PHARMA_QUERY = `query($vcfFileId: String!) { pharmacoPanel(vcfFileId: $vcfFileId) { gene diplotype phenotype drugs } }`;
+const PRS_QUERY = `query($vcfFileId: ID!) { prsResults(vcfFileId: $vcfFileId) { traitKey trait percentile zScore interpretation } }`;
 
 type Tier = 'strong' | 'plausible';
-type Tag = 'farmaco' | 'integratore' | 'alimento' | 'stile';
+type Tag = 'farmaco' | 'integratore' | 'alimento' | 'stile' | 'esame';
 type TraitState = 'REFERENCE' | 'CARRIED' | 'NOT_COVERED';
 
 const TAG_META: Record<Tag, { label: string; cls: string }> = {
@@ -21,6 +22,7 @@ const TAG_META: Record<Tag, { label: string; cls: string }> = {
   integratore: { label: 'Integratore', cls: 'bg-violet-500/15 text-violet-700 dark:text-violet-400' },
   alimento: { label: 'Alimento', cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
   stile: { label: 'Stile di vita', cls: 'bg-sky-500/15 text-sky-700 dark:text-sky-400' },
+  esame: { label: 'Esame', cls: 'bg-amber-500/15 text-amber-700 dark:text-amber-400' },
 };
 
 // Contenuto curato (scienza, NON dati personali): lo stato del soggetto arriva
@@ -157,6 +159,12 @@ function SalutePage() {
     queryFn: () => gqlClient.request<any>(PHARMA_QUERY, { vcfFileId: activeFile?.id }),
     enabled: !!activeFile, staleTime: 30_000,
   });
+  const { data: prsData } = useQuery({
+    queryKey: ['prsResults', activeFile?.id],
+    queryFn: () => gqlClient.request<any>(PRS_QUERY, { vcfFileId: activeFile?.id }),
+    enabled: !!activeFile, staleTime: 30_000,
+  });
+  const lpa = (prsData?.prsResults ?? []).find((p: any) => p.traitKey === 'LPA_PGS');
 
   const traitByRs: Record<string, any> = useMemo(() => {
     const m: Record<string, any> = {};
@@ -188,6 +196,8 @@ function SalutePage() {
   const strongDiet = resolved.filter((r) => r.ins.tier === 'strong' && visible(r.ins.tags));
   const plausibleDiet = resolved.filter((r) => r.ins.tier === 'plausible' && visible(r.ins.tags));
   const showFarmaco = tagFilter === 'all' || tagFilter === 'farmaco';
+  const showEsame = tagFilter === 'all' || tagFilter === 'esame';
+  const lpaHigh = lpa && typeof lpa.percentile === 'number' && lpa.percentile >= 80;
 
   if (!activeFile) {
     return <div className="text-center text-muted-foreground py-12">Carica un file VCF per la sezione salute.</div>;
@@ -244,7 +254,7 @@ function SalutePage() {
 
       {/* Filtri per tag */}
       <div className="flex flex-wrap gap-2">
-        {(['all', 'farmaco', 'integratore', 'alimento', 'stile'] as const).map((t) => (
+        {(['all', 'farmaco', 'integratore', 'alimento', 'stile', 'esame'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTagFilter(t)}
@@ -263,6 +273,23 @@ function SalutePage() {
           <h2 className="text-base font-semibold">🟢 {TIER_META.strong.label}</h2>
           <p className="text-xs text-muted-foreground">{TIER_META.strong.desc}</p>
         </div>
+
+        {/* Lipoproteina(a): reperto azionabile dal PRS — misurazione una-tantum */}
+        {showEsame && lpa && (
+          <InsightCard
+            tags={['esame']} tier="strong" title="Lipoproteina(a) — misurala una volta"
+            stateBadge={lpaHigh
+              ? { label: `${lpa.percentile?.toFixed(0)}° percentile`, cls: 'bg-red-500/15 text-red-700 dark:text-red-400' }
+              : { label: `${lpa.percentile?.toFixed(0)}° percentile`, cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' }}
+            status={lpa.interpretation}
+            statusMeta={`Lp(a) PRS · z${(lpa.zScore ?? 0) >= 0 ? '+' : ''}${(lpa.zScore ?? 0).toFixed(2)}`}
+            consideration={lpaHigh
+              ? 'PRS molto alto → la Lp(a) sierica è verosimilmente elevata. La Lp(a) è un fattore di rischio cardiovascolare indipendente e quasi tutto genetico. Chiedi al medico il dosaggio nel sangue (una volta nella vita basta, è stabile): è la conferma vera, non il PRS. Se confermata alta, non esiste ancora un farmaco approvato che la abbassi → si controlla aggressivamente tutto il resto (LDL, pressione, non fumare).'
+              : 'La Lp(a) si misura una volta nella vita ed è utile conoscerla. Il tuo PRS non è elevato, ma il dosaggio nel sangue resta il dato definitivo se il medico lo ritiene opportuno.'}
+            evidence="Linee guida EAS/ESC — misurazione una-tantum"
+            links={[{ label: 'EAS consensus (PubMed)', url: 'https://pubmed.ncbi.nlm.nih.gov/36036785/' }]}
+          />
+        )}
 
         {/* Farmaci PGx con attenzione */}
         {showFarmaco && pharmaAttn.map((p: any) => (
