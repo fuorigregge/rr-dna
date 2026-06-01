@@ -38,9 +38,9 @@ export function PrsDistributionChart({
   if (!data.length) return null;
 
   return (
-    <div className="mt-1">
-      <ResponsiveContainer width="100%" height={150}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 2, left: 8 }}>
+    <div className="mt-3">
+      <ResponsiveContainer width="100%" height={168}>
+        <ComposedChart data={data} margin={{ top: 22, right: 10, bottom: 2, left: 8 }}>
           <XAxis
             dataKey="x" type="number" domain={domain} scale="linear"
             tick={{ fontSize: 10 }} tickFormatter={(v) => (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1))}
