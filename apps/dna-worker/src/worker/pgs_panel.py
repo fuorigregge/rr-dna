@@ -176,6 +176,25 @@ PGS_SCORES = [
         "pgs_id": "PGS000350", "trait_key": "GLAUCOMA_PGS", "trait": "Glaucoma ad angolo aperto",
         "label": "Glaucoma POAG (GRS12)", "description": "Score di 12 SNP per il glaucoma primario ad angolo aperto.",
     },
+    # --- Tratti non-malattia (kind="trait"): non sono rischi clinici ma posizioni
+    #     su uno spettro fenotipico. Score compatti (hit genome-wide), catturano
+    #     una frazione limitata della varianza → indicativi sulla direzione, non
+    #     predittivi. Interpretazione neutra (vedi _interpret_trait). ---
+    {
+        "pgs_id": "PGS000297", "trait_key": "HEIGHT_PGS", "trait": "Altezza", "kind": "trait",
+        "label": "Altezza (GRS3290, Xie 2020)",
+        "description": "Score di 3.290 SNP per la statura adulta (lead SNP, coorte prevalentemente europea). Spiega solo una parte dell'altezza: nutrizione, sviluppo e migliaia di altri loci contano molto.",
+    },
+    {
+        "pgs_id": "PGS002586", "trait_key": "CHRONOTYPE_PGS", "trait": "Cronotipo (mattiniero vs serotino)", "kind": "trait",
+        "label": "Cronotipo (morning person, Weissbrod 2022)",
+        "description": "Score di 255 SNP per la preferenza mattutina (UK Biobank, europei). Un valore alto tende al mattiniero, basso al serotino — tratto non patologico, l'ambiente (luce, abitudini, età) pesa molto.",
+    },
+    {
+        "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità", "kind": "trait",
+        "label": "Longevità (PRS-5, Tesi 2021)",
+        "description": "Score di 330 SNP associati alla longevità (europei). Cattura un effetto genetico piccolo: stile di vita, ambiente e fortuna restano di gran lunga i fattori dominanti. Curiosità, non una previsione.",
+    },
 ]
 
 
@@ -377,6 +396,36 @@ def _interpret(z: float | None, trait: str, raw: float) -> str:
     return f"Predisposizione genetica nella media della popolazione per {trait}."
 
 
+# Poli interpretativi dei tratti non-malattia: (direzione per z alto, per z basso).
+_TRAIT_POLES = {
+    "HEIGHT_PGS": ("statura sopra la media", "statura sotto la media"),
+    "CHRONOTYPE_PGS": ("cronotipo mattutino (early bird)", "cronotipo serotino (night owl)"),
+    "LONGEVITY_PGS": ("longevità sopra la media", "longevità sotto la media"),
+}
+
+
+def _interpret_trait(z: float | None, trait: str, raw: float, poles: tuple[str, str]) -> str:
+    """Interpretazione NEUTRA per i tratti non-malattia: nessun linguaggio di
+    rischio, solo la posizione sullo spettro. Un valore alto non è "peggio"."""
+    high, low = poles
+    if z is None:
+        return (
+            f"Score grezzo {raw:+.2f} per {trait}. Percentile non disponibile "
+            f"(manca una distribuzione di riferimento affidabile). È un tratto, non un rischio."
+        )
+    if z >= 1.0:
+        return (
+            f"Tendenza genetica verso {high} ({z:+.1f} SD sopra la media europea). "
+            f"È un tratto non patologico: ambiente e molti altri geni contano almeno quanto lo score."
+        )
+    if z <= -1.0:
+        return (
+            f"Tendenza genetica verso {low} ({z:.1f} SD sotto la media europea). "
+            f"È un tratto non patologico: ambiente e molti altri geni contano almeno quanto lo score."
+        )
+    return f"Predisposizione nella media della popolazione europea per {trait} (tratto non patologico)."
+
+
 def call_all_pgs(pgs_observations: dict, pgs_ref_covered: set, references: dict | None = None) -> list[dict]:
     """Calcola tutti gli score PGS disponibili. Risultati pronti per persist.
 
@@ -392,9 +441,16 @@ def call_all_pgs(pgs_observations: dict, pgs_ref_covered: set, references: dict 
         res = compute_pgs_score(score["pgs_id"], pgs_observations, pgs_ref_covered, ref)
         if res is None:
             continue
+        if score.get("kind") == "trait":
+            interp = _interpret_trait(
+                res["z_score"], score["trait"], res["raw_score"],
+                _TRAIT_POLES.get(score["trait_key"], ("valore alto", "valore basso")),
+            )
+        else:
+            interp = _interpret(res["z_score"], score["trait"], res["raw_score"])
         out.append({
             **score,
             **res,
-            "interpretation": _interpret(res["z_score"], score["trait"], res["raw_score"]),
+            "interpretation": interp,
         })
     return out

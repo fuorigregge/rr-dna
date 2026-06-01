@@ -238,5 +238,29 @@
     "markers_resolved": 12,
     "markers_unseen_in_kg": 0,
     "trait_key": "GLAUCOMA_PGS"
+  },
+  "PGS000297": {
+    "mean": 54.68305049423455,
+    "sd": 0.747208424306372,
+    "n_samples": 503,
+    "markers_resolved": 3260,
+    "markers_unseen_in_kg": 36,
+    "trait_key": "HEIGHT_PGS"
+  },
+  "PGS002586": {
+    "mean": -1.506745304614513,
+    "sd": 0.4013720397981284,
+    "n_samples": 503,
+    "markers_resolved": 223,
+    "markers_unseen_in_kg": 34,
+    "trait_key": "CHRONOTYPE_PGS"
+  },
+  "PGS000906": {
+    "mean": 0.3900209286282305,
+    "sd": 0.22713591246911607,
+    "n_samples": 503,
+    "markers_resolved": 325,
+    "markers_unseen_in_kg": 5,
+    "trait_key": "LONGEVITY_PGS"
   }
 }

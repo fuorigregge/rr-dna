@@ -12,9 +12,13 @@ import type { PrsResult } from '@/components/dashboard/prs-card';
 
 export const Route = createFileRoute('/prs')({ component: PrsPage });
 
-type CategoryKey = 'cancer' | 'cardio' | 'metabolic' | 'autoimmune' | 'neuro' | 'bone' | 'eye' | 'other';
+type CategoryKey = 'trait' | 'cancer' | 'cardio' | 'metabolic' | 'autoimmune' | 'neuro' | 'bone' | 'eye' | 'other';
+
+// Tratti non-malattia: nessun rischio clinico, solo posizione su uno spettro.
+const NON_DISEASE: CategoryKey = 'trait';
 
 const CATEGORY_OF: Record<string, CategoryKey> = {
+  HEIGHT_PGS: 'trait', CHRONOTYPE_PGS: 'trait', LONGEVITY_PGS: 'trait',
   BC_PGS: 'cancer', BC_PRS3820: 'cancer', BC_ER_NEG_PGS: 'cancer',
   PROSTATE_PGS: 'cancer', OVARIAN_PGS: 'cancer', MELANOMA_PGS: 'cancer',
   BCC_PGS: 'cancer', SCC_PGS: 'cancer', CRC_PGS: 'cancer',
@@ -30,6 +34,7 @@ const CATEGORY_OF: Record<string, CategoryKey> = {
 };
 
 const CATEGORY_META: Record<CategoryKey, { label: string; color: string }> = {
+  trait:     { label: 'Tratti & longevità',    color: 'bg-teal-500/15 text-teal-700 dark:text-teal-400' },
   cancer:    { label: 'Tumori',                color: 'bg-rose-500/15 text-rose-700 dark:text-rose-400' },
   cardio:    { label: 'Cardiovascolare',       color: 'bg-amber-500/15 text-amber-700 dark:text-amber-400' },
   metabolic: { label: 'Metabolico',            color: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
@@ -40,13 +45,20 @@ const CATEGORY_META: Record<CategoryKey, { label: string; color: string }> = {
   other:     { label: 'Altro',                 color: 'bg-secondary text-muted-foreground' },
 };
 
-const CATEGORY_ORDER: CategoryKey[] = ['cancer', 'cardio', 'metabolic', 'autoimmune', 'neuro', 'bone', 'eye', 'other'];
+const CATEGORY_ORDER: CategoryKey[] = ['trait', 'cancer', 'cardio', 'metabolic', 'autoimmune', 'neuro', 'bone', 'eye', 'other'];
 
 function categoryOf(r: PrsResult): CategoryKey {
   return CATEGORY_OF[r.traitKey] ?? 'other';
 }
 
+function isNonDisease(traitKey: string | undefined | null): boolean {
+  return !!traitKey && CATEGORY_OF[traitKey] === NON_DISEASE;
+}
+
 function tierColor(z: number | null | undefined, raw: number, traitKey?: string): string {
+  // Tratti non-malattia: colore NEUTRO. Alto/basso non è meglio/peggio, è solo
+  // dove cadi sullo spettro — niente semantica rosso=rischio / verde=protetto.
+  if (isNonDisease(traitKey)) return 'text-teal-600 dark:text-teal-400';
   if (z == null) {
     if (raw > 0) return 'text-amber-600 dark:text-amber-400';
     if (raw < 0) return 'text-emerald-600 dark:text-emerald-400';
@@ -69,10 +81,14 @@ function calibrationLabel(src: string | null | undefined, calibrated: boolean): 
   return src;
 }
 
-function PercentileBar({ percentile }: { percentile: number }) {
+function PercentileBar({ percentile, neutral }: { percentile: number; neutral?: boolean }) {
   const clamped = Math.max(0, Math.min(100, percentile));
+  // Neutro: gradiente simmetrico (nessun lato "buono"/"cattivo"). Rischio: verde→rosso.
+  const grad = neutral
+    ? 'bg-gradient-to-r from-sky-400/30 via-teal-400/25 to-violet-400/30'
+    : 'bg-gradient-to-r from-emerald-500/30 via-sky-400/30 to-red-500/40';
   return (
-    <div className="relative h-2 rounded-full bg-gradient-to-r from-emerald-500/30 via-sky-400/30 to-red-500/40">
+    <div className={`relative h-2 rounded-full ${grad}`}>
       <div
         className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-foreground border-2 border-background shadow"
         style={{ left: `calc(${clamped}% - 6px)` }}
@@ -84,6 +100,7 @@ function PercentileBar({ percentile }: { percentile: number }) {
 
 function PrsRow({ r, expanded, onToggle }: { r: PrsResult; expanded: boolean; onToggle: () => void }) {
   const calibrated = typeof r.percentile === 'number' && typeof r.zScore === 'number';
+  const neutral = isNonDisease(r.traitKey);
   return (
     <div className="border-b last:border-b-0 border-border/60">
       <button
@@ -124,7 +141,7 @@ function PrsRow({ r, expanded, onToggle }: { r: PrsResult; expanded: boolean; on
         </div>
         {calibrated && (
           <div className="mt-2">
-            <PercentileBar percentile={r.percentile as number} />
+            <PercentileBar percentile={r.percentile as number} neutral={neutral} />
           </div>
         )}
       </button>
@@ -319,6 +336,13 @@ function PrsPage() {
                   <Badge className={meta.color}>{meta.label}</Badge>
                   <span className="text-xs text-muted-foreground">{list.length} score</span>
                 </div>
+                {k === 'trait' && (
+                  <p className="text-xs text-muted-foreground py-2 leading-snug">
+                    Non sono rischi di malattia: descrivono dove cadi su uno spettro fenotipico
+                    (più alto/basso, più mattiniero/serotino). Score compatti — indicativi sulla
+                    direzione, non predittivi. Il colore è neutro di proposito.
+                  </p>
+                )}
                 {list.map((r) => (
                   <PrsRow
                     key={r.id}
