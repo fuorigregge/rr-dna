@@ -133,6 +133,56 @@ PHARMACOGENES = {
         ],
         "resolver": "ugt1a1",
     },
+    "CYP4F2": {
+        "drugs": "warfarin (richiesta di vitamina K, con VKORC1/CYP2C9)",
+        "ref_allele": "*1",
+        "snps": [
+            {"rs_id": "rs2108622", "chrom": "19", "pos": 15879621, "ref": "C", "allele": "*3"},
+        ],
+        "phenotype": {
+            ("*1", "*1"): "Funzione normale (dose warfarin standard)",
+            ("*1", "*3"): "Funzione intermedia (richiesta di warfarin leggermente aumentata)",
+            ("*3", "*3"): "Funzione ridotta (richiesta di warfarin aumentata)",
+        },
+    },
+    "CYP2B6": {
+        "drugs": "efavirenz, metadone, bupropione, ciclofosfamide",
+        # rs3745274 (516G>T, Q172H) e' il marker funzionale principale di *6 (proxy
+        # clinico standard); senza rs2279343 non si distingue *6 da *9, ma la
+        # funzione ridotta e' guidata da 516T.
+        "ref_allele": "*1",
+        "snps": [
+            {"rs_id": "rs3745274", "chrom": "19", "pos": 41006936, "ref": "G", "allele": "*6"},
+        ],
+        "phenotype": {
+            ("*1", "*1"): "Metabolizzatore normale",
+            ("*1", "*6"): "Metabolizzatore intermedio",
+            ("*6", "*6"): "Metabolizzatore lento (accumulo di efavirenz, piu' effetti sul SNC)",
+        },
+    },
+    # ---- Geni con resolver custom (aplotipi lenti / X-linked) ----
+    "NAT2": {
+        "drugs": "isoniazide, idralazina, sulfamidici, procainamide, caffeina",
+        "ref_allele": "*4",  # *4 = aplotipo rapido di riferimento
+        "snps": [
+            {"rs_id": "rs1801280", "chrom": "8", "pos": 18400344, "ref": "T", "allele": "*5"},
+            {"rs_id": "rs1799930", "chrom": "8", "pos": 18400593, "ref": "G", "allele": "*6"},
+            {"rs_id": "rs1799931", "chrom": "8", "pos": 18400860, "ref": "G", "allele": "*7"},
+        ],
+        "resolver": "nat2",
+    },
+    "G6PD": {
+        "drugs": "rasburicase, primachina, dapsone, nitrofurantoina, blu di metilene; fave (favismo)",
+        "ref_allele": "B",  # B = allele normale (wild-type)
+        # X-linked: nel maschio emizigote (1 allele), nella femmina diploide.
+        # Mediterranea (severa) = rs5030868; A- (moderata) = rs1050828 + rs1050829 in cis.
+        "snps": [
+            {"rs_id": "rs5030868", "chrom": "X", "pos": 154534419, "ref": "G", "allele": "Mediterranea"},
+            {"rs_id": "rs1050828", "chrom": "X", "pos": 154536002, "ref": "C", "allele": "202A"},
+            {"rs_id": "rs1050829", "chrom": "X", "pos": 154535277, "ref": "T", "allele": "376G"},
+        ],
+        "resolver": "g6pd",
+    },
 }
 
 
@@ -254,10 +304,76 @@ def resolve_ugt1a1(snp_genotypes: dict) -> tuple[str | None, str | None]:
     return "*28/*28", "Metabolizzatore lento (sindrome di Gilbert) — iperbilirubinemia non-coniugata; tossicita' aumentata da irinotecan (ridurre dose ~70%)"
 
 
+def resolve_nat2(snp_genotypes: dict) -> tuple[str | None, str | None]:
+    """Stato acetilatore NAT2 dal numero di aplotipi lenti (*5/*6/*7).
+
+    Ogni allele variante e' no-function. *5 (341T>C), *6 (590G>A), *7 (857G>A)
+    marcano aplotipi lenti distinti che in pratica non co-occorrono in cis, quindi
+    il numero di alleli varianti = numero di aplotipi lenti (max 2). 0 = rapido,
+    1 = intermedio, 2 = lento. >2 = combinazione non risolvibile senza fasaggio.
+    """
+    s5 = _alt_count(snp_genotypes, "rs1801280")
+    s6 = _alt_count(snp_genotypes, "rs1799930")
+    s7 = _alt_count(snp_genotypes, "rs1799931")
+    if s5 is None or s6 is None or s7 is None:
+        return None, None
+    slow = s5 + s6 + s7
+    if slow > 2:
+        return None, None
+    labels = ["*5"] * s5 + ["*6"] * s6 + ["*7"] * s7
+    labels += ["*4"] * (2 - len(labels))
+    diplotype = "/".join(sorted(labels))
+    if slow == 0:
+        phen = "Acetilatore rapido"
+    elif slow == 1:
+        phen = "Acetilatore intermedio"
+    else:
+        phen = "Acetilatore lento — maggior rischio di tossicita' da isoniazide/sulfamidici; clearance piu' lenta della caffeina"
+    return diplotype, phen
+
+
+def _x_ploidy_alt(snp_genotypes: dict, rs_id: str) -> tuple[int | None, int]:
+    """(ploidia, copie dell'allele variante) per un SNP su X. ploidia 1 = maschio
+    emizigote, 2 = femmina. ploidia None se no-call."""
+    gt = snp_genotypes.get(rs_id)
+    called = [a for a in (gt or []) if a is not None and a >= 0]
+    if not called:
+        return None, 0
+    return len(called), sum(1 for a in called if a >= 1)
+
+
+def resolve_g6pd(snp_genotypes: dict) -> tuple[str | None, str | None]:
+    """G6PD (X-linked). Maschio emizigote: una sola copia → carente o normale.
+    Femmina: het = portatrice (attivita' variabile per inattivazione dell'X),
+    omozigote = carente. Mediterranea (rs5030868) e' severa; A- richiede
+    rs1050828 + rs1050829 (assunti in cis nel maschio)."""
+    pm, med = _x_ploidy_alt(snp_genotypes, "rs5030868")
+    p2, v202 = _x_ploidy_alt(snp_genotypes, "rs1050828")
+    p3, v376 = _x_ploidy_alt(snp_genotypes, "rs1050829")
+    if pm is None or p2 is None or p3 is None:
+        return None, None
+    ploidy = max(pm, p2, p3)
+    is_amin = v202 >= 1 and v376 >= 1  # A-: 202 + 376 (cis assunto)
+    if ploidy == 1:  # maschio emizigote
+        if med >= 1:
+            return "Mediterranea", "Carente — variante Mediterranea (deficit severo): evitare fave e farmaci ossidanti (rasburicase, primachina, dapsone, nitrofurantoina)"
+        if is_amin:
+            return "A-", "Carente — variante A- (deficit moderato): cautela con farmaci ossidanti ad alte dosi"
+        return "B", "Attivita' G6PD normale"
+    # femmina diploide
+    if med >= 2 or (is_amin and v202 >= 2 and v376 >= 2):
+        return "carente/carente", "Carente (omozigote): evitare fave e farmaci ossidanti"
+    if med >= 1 or is_amin:
+        return "B/carente", "Portatrice — attivita' G6PD variabile (inattivazione dell'X); possibile carenza parziale"
+    return "B/B", "Attivita' G6PD normale"
+
+
 RESOLVERS = {
     "tpmt": resolve_tpmt,
     "dpyd": resolve_dpyd,
     "ugt1a1": resolve_ugt1a1,
+    "nat2": resolve_nat2,
+    "g6pd": resolve_g6pd,
 }
 
 

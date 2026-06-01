@@ -2,9 +2,12 @@ from src.worker.pharmacogenes import (
     PHARMACOGENES,
     called_alleles,
     call_phenotype,
+    call_all,
     resolve_tpmt,
     resolve_dpyd,
     resolve_ugt1a1,
+    resolve_nat2,
+    resolve_g6pd,
 )
 
 
@@ -181,3 +184,109 @@ def test_ugt1a1_homozygous_28():
 def test_ugt1a1_nocall():
     gt = {"rs887829": [-1, -1]}
     assert resolve_ugt1a1(gt) == (None, None)
+
+
+# ---------------------------- NAT2 ---------------------------------------
+
+def test_nat2_rapid_all_reference():
+    gt = {"rs1801280": [0, 0], "rs1799930": [0, 0], "rs1799931": [0, 0]}
+    dip, phen = resolve_nat2(gt)
+    assert dip == "*4/*4"
+    assert "rapido" in phen.lower()
+
+
+def test_nat2_intermediate_one_slow():
+    gt = {"rs1801280": [0, 1], "rs1799930": [0, 0], "rs1799931": [0, 0]}
+    dip, phen = resolve_nat2(gt)
+    assert dip == "*4/*5"
+    assert "intermedio" in phen.lower()
+
+
+def test_nat2_slow_two_distinct_slow_haplotypes():
+    # *5 (341) + *6 (590) heterozygous → two slow haplotypes → slow acetylator
+    gt = {"rs1801280": [0, 1], "rs1799930": [0, 1], "rs1799931": [0, 0]}
+    dip, phen = resolve_nat2(gt)
+    assert dip == "*5/*6"
+    assert "lento" in phen.lower()
+
+
+def test_nat2_slow_homozygous():
+    gt = {"rs1801280": [1, 1], "rs1799930": [0, 0], "rs1799931": [0, 0]}
+    dip, phen = resolve_nat2(gt)
+    assert dip == "*5/*5"
+    assert "lento" in phen.lower()
+
+
+def test_nat2_unresolvable_too_many_slow():
+    # homozygous *5 + heterozygous *6 → 3 slow copies, impossible without phasing
+    gt = {"rs1801280": [1, 1], "rs1799930": [0, 1], "rs1799931": [0, 0]}
+    assert resolve_nat2(gt) == (None, None)
+
+
+def test_nat2_nocall():
+    gt = {"rs1801280": [-1, -1], "rs1799930": [0, 0], "rs1799931": [0, 0]}
+    assert resolve_nat2(gt) == (None, None)
+
+
+# ---------------------------- CYP4F2 / CYP2B6 (simple) -------------------
+
+def test_cyp4f2_reduced_homozygous_star3():
+    gene = PHARMACOGENES["CYP4F2"]
+    gt = {"rs2108622": [1, 1]}
+    alleles = called_alleles(gene, gt)
+    assert sorted(alleles) == ["*3", "*3"]
+    assert "ridotta" in call_phenotype(gene, alleles).lower()
+
+
+def test_cyp2b6_normal():
+    gene = PHARMACOGENES["CYP2B6"]
+    gt = {"rs3745274": [0, 0]}
+    alleles = called_alleles(gene, gt)
+    assert sorted(alleles) == ["*1", "*1"]
+    assert "normale" in call_phenotype(gene, alleles).lower()
+
+
+# ---------------------------- G6PD (X-linked) ---------------------------
+
+def test_g6pd_male_hemizygous_normal():
+    # haploid reference (male) → normal
+    gt = {"rs5030868": [0], "rs1050828": [0], "rs1050829": [0]}
+    dip, phen = resolve_g6pd(gt)
+    assert dip == "B"
+    assert "normale" in phen.lower()
+
+
+def test_g6pd_male_mediterranean_deficient():
+    gt = {"rs5030868": [1], "rs1050828": [0], "rs1050829": [0]}
+    dip, phen = resolve_g6pd(gt)
+    assert dip == "Mediterranea"
+    assert "carente" in phen.lower()
+
+
+def test_g6pd_male_a_minus_requires_both_snps():
+    # 376 alone (A+) is NOT deficient
+    gt = {"rs5030868": [0], "rs1050828": [0], "rs1050829": [1]}
+    dip, phen = resolve_g6pd(gt)
+    assert dip == "B"
+    # 202 + 376 together → A- deficient
+    gt2 = {"rs5030868": [0], "rs1050828": [1], "rs1050829": [1]}
+    dip2, phen2 = resolve_g6pd(gt2)
+    assert dip2 == "A-"
+    assert "carente" in phen2.lower()
+
+
+def test_g6pd_female_carrier():
+    gt = {"rs5030868": [0, 1], "rs1050828": [0, 0], "rs1050829": [0, 0]}
+    dip, phen = resolve_g6pd(gt)
+    assert "carente" in dip.lower() or "portatrice" in phen.lower()
+
+
+def test_g6pd_nocall():
+    gt = {"rs5030868": [], "rs1050828": [0], "rs1050829": [0]}
+    assert resolve_g6pd(gt) == (None, None)
+
+
+def test_call_all_includes_new_genes():
+    genes = {r["gene"] for r in call_all({})}
+    for g in ("NAT2", "G6PD", "CYP4F2", "CYP2B6"):
+        assert g in genes

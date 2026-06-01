@@ -13,10 +13,16 @@ const PANEL_QUERY = `query($vcfFileId: String!) { pharmacoPanel(vcfFileId: $vcfF
 function getMetabolizerInfo(status?: string) {
   if (!status) return { className: 'bg-muted text-muted-foreground', label: '—' };
   const lower = status.toLowerCase();
-  if (lower.includes('poor') || lower.includes('slow') || lower.includes('lento')) return { className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: status };
-  if (lower.includes('ultra') || lower.includes('rapid')) return { className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', label: status };
-  if (lower.includes('intermediate') || lower.includes('intermedio') || lower.includes('non-espressore') || lower.includes('non espressore')) return { className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: status };
-  if (lower.includes('normal') || lower.includes('extensive')) return { className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: status };
+  const red = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+  const amber = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+  const blue = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+  const green = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+  // "normale" prima di tutto: evita che "richiesta ridotta" su un normale sviii il colore
+  if (lower.includes('normal') || lower.includes('extensive')) return { className: green, label: status };
+  if (lower.includes('poor') || lower.includes('slow') || lower.includes('lento') || lower.includes('carente') || lower.includes('alta sensibilit')) return { className: red, label: status };
+  if (lower.includes('ultra') || lower.includes('rapid')) return { className: amber, label: status };
+  if (lower.includes('ridott') || lower.includes('portatrice')) return { className: amber, label: status };
+  if (lower.includes('intermedi') || lower.includes('non-espressore') || lower.includes('non espressore')) return { className: blue, label: status };
   return { className: 'bg-secondary text-secondary-foreground', label: status };
 }
 
