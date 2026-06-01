@@ -216,6 +216,32 @@ function SalutePage() {
         </CardContent>
       </Card>
 
+      {/* Invecchiamento / healthspan — sintesi onesta */}
+      <Card>
+        <CardContent className="pt-4 space-y-2 text-sm">
+          <p className="font-medium text-foreground">Invecchiamento &amp; healthspan 🕰️</p>
+          <p className="text-muted-foreground leading-snug">
+            Il DNA non offre scorciatoie antiaging. I fattori con evidenza vera sono <strong>universali</strong> e
+            battono qualsiasi integratore: non fumare, attività fisica (forza + aerobica), sonno, dieta mediterranea,
+            salute cardiometabolica (pressione/glicemia/lipidi), alcol moderato, protezione solare, legami sociali.
+          </p>
+          <div className="text-muted-foreground leading-snug">
+            <span className="text-foreground font-medium">Dove il tuo DNA raffina:</span>
+            <ul className="list-disc list-inside space-y-0.5 mt-1">
+              <li><strong>Non fumare conta doppio</strong> — una componente genetica (CHRNA5) puo' rendere la nicotina più tenace (vedi “Nicotina”).</li>
+              <li><strong>Misura l’omocisteina</strong> — MTHFR (variante): se alta, folati/B12 la abbassano (rischio cardio/cognitivo).</li>
+              <li><strong>Mantieni la vitamina D</strong> — alcuni profili tendono a valori bassi (vedi “Vitamina D”).</li>
+              <li><strong>Via glutatione/NAC</strong> — razionale plausibile, non provato (vedi card dedicata).</li>
+            </ul>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400 leading-snug">
+            Hype che il tuo DNA <strong>non</strong> supporta: NMN/NR, resveratrolo, metformina nei sani, rapamicina —
+            nessuna prova di beneficio guidato dal genotipo. Lo score “Longevità (centenari)” spiega &lt;1% ed è
+            autosomico: il sesso pesa molto di più.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Filtri per tag */}
       <div className="flex flex-wrap gap-2">
         {(['all', 'farmaco', 'integratore', 'alimento', 'stile'] as const).map((t) => (

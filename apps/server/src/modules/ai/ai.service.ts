@@ -311,6 +311,7 @@ Concentrati su:
 - Alimenti: indicazioni concrete dove l'evidenza regge (lattosio, ferro/HFE, alcol) — cosa preferire/limitare, senza diete miracolose.
 - Integratori: dove ha senso MISURARE prima (es. vitamina D, B12, omocisteina per MTHFR); ribadisci che il genotipo non prescrive integratori.
 - Stile di vita: nicotina/alcol — messaggi netti e onesti.
+- Invecchiamento/healthspan: se pertinente, una sezione "## Invecchiamento" che dica chiaro che il DNA non offre scorciatoie antiaging — i fattori veri sono universali (non fumare, attività fisica, sonno, dieta mediterranea, salute cardiometabolica) — e che il genotipo li RAFFINA (es. CHRNA5 → non fumare; MTHFR → omocisteina; vitamina D). Smonta l'hype non supportato dal genotipo (NMN, resveratrolo, metformina nei sani, rapamicina). NON proporre integratori longevità.
 - Chiudi NON con un elenco di acquisti, ma con "cosa misurare / cosa discutere col medico".
 - IMPORTANTE: usa le lettere accentate italiane (à, è, ì, ò, ù), MAI apostrofi al posto degli accenti.`;
   }
