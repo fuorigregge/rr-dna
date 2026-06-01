@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { to: '/carrier' as const, label: 'Carrier' },
   { to: '/ancestry' as const, label: 'Ancestry' },
   { to: '/traits' as const, label: 'Tratti & Fitness' },
+  { to: '/salute' as const, label: 'Salute' },
   { to: '/variants' as const, label: 'Varianti' },
 ];
 
