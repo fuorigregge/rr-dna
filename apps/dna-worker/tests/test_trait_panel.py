@@ -94,7 +94,7 @@ def test_panel_entries_wellformed():
         seen_rsids.add(e["rs_id"])
         assert e["chrom"] and isinstance(e["pos"], int) and e["pos"] > 0
         assert e["trait"] and e["gene"]
-        assert e["category"] in ("METABOLISM", "PHYSICAL", "COGNITIVE")
+        assert e["category"] in ("METABOLISM", "PHYSICAL", "COGNITIVE", "APPEARANCE")
         # every panel entry must explain all three states
         for state in ("REFERENCE", "CARRIED", "NOT_COVERED"):
             assert state in e["interpretation"] and e["interpretation"][state]

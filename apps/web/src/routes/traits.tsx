@@ -81,6 +81,8 @@ function TraitsPage() {
     staleTime: 30_000,
   });
   const panel = panelData?.traitPanel ?? [];
+  const appearance = panel.filter((p: any) => p.category === 'APPEARANCE');
+  const corePanel = panel.filter((p: any) => p.category !== 'APPEARANCE');
 
   const items = data?.phenotypeTraits?.items ?? [];
   const total = data?.phenotypeTraits?.total ?? 0;
@@ -97,8 +99,44 @@ function TraitsPage() {
 
       <AiSummaryCard />
 
+      {/* Aspetto & curiosità — tratti a SNP singolo, effetto piccolo, divertenti */}
+      {appearance.length > 0 && (
+        <Card>
+          <CardContent className="pt-4 space-y-3">
+            <div>
+              <h2 className="text-base font-semibold">Aspetto & curiosità 🎭</h2>
+              <p className="text-xs text-muted-foreground">
+                Tratti a singolo SNP: cerume, coriandolo, asparagi, lentiggini, capelli, starnuto fotico…
+                Effetto piccolo — il fenotipo reale dipende da molti geni e dall'ambiente. Per curiosità, non diagnostici.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {appearance.map((p: any) => {
+                const st = PANEL_STATE[p.state] ?? PANEL_STATE.NOT_COVERED;
+                return (
+                  <div key={p.rsId} className="p-3 rounded-lg bg-secondary/50 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-sm">
+                        {p.trait} <span className="text-muted-foreground font-normal">({p.gene})</span>
+                      </span>
+                      <Badge className={st.cls}>{st.label}</Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground font-mono">
+                      <span>{p.rsId}</span>
+                      {p.genotype && <span>· {p.genotype}</span>}
+                      {p.zygosity && <span>· {p.zygosity === 'HOMOZYGOUS' ? 'omozigote' : 'eterozigote'}</span>}
+                    </div>
+                    {p.interpretation && <p className="text-xs text-muted-foreground">{p.interpretation}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Pannello tratti noti — verdetto esplicito anche per i genotipi standard (0/0) */}
-      {panel.length > 0 && (
+      {corePanel.length > 0 && (
         <Card>
           <CardContent className="pt-4 space-y-3">
             <div>
@@ -109,7 +147,7 @@ function TraitsPage() {
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {panel.map((p: any) => {
+              {corePanel.map((p: any) => {
                 const st = PANEL_STATE[p.state] ?? PANEL_STATE.NOT_COVERED;
                 return (
                   <div key={p.rsId} className="p-3 rounded-lg bg-secondary/50 space-y-1">

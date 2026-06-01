@@ -226,6 +226,112 @@ TRAIT_PANEL = [
             "CARRIED": "Porti l'allele C (MC1R D294H): tra le varianti MC1R con effetto piu' forte sul fenotipo capelli rossi / pelle chiara / sensibilita' UV.",
         },
     },
+    # --- Aspetto & curiosita': SNP singoli a effetto piccolo. Divertenti, NON diagnostici:
+    # il fenotipo reale dipende da molti geni e dall'ambiente. Polarita' verificata su FASTA hg38.
+    {
+        "rs_id": "rs17822931", "gene": "ABCC11", "trait": "Cerume & odore corporeo",
+        "category": "APPEARANCE", "chrom": "16", "pos": 48224287, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC: cerume UMIDO e odore ascellare tipico — il fenotipo della maggioranza di europei e africani. Lo stesso gene (ABCC11) regola cerume e ghiandole apocrine: stesso interruttore per entrambi.",
+            "CARRIED": "Porti l'allele T (Gly180Arg): associato a cerume SECCO/squamoso e odore ascellare RIDOTTO. In omozigosi (TT) il tratto e' pieno; comune in Asia orientale, raro in Europa.",
+        },
+    },
+    {
+        "rs_id": "rs72921001", "gene": "OR6A2", "trait": "Coriandolo: sapore di sapone",
+        "category": "APPEARANCE", "chrom": "11", "pos": 6868417, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC nel locus dei recettori olfattivi OR6A2, legato alla percezione del coriandolo (cilantro). Questo SNP spiega solo una piccola parte del fenomeno 'coriandolo = sapone': contano la genetica olfattiva piu' ampia e l'abitudine.",
+            "CARRIED": "Porti una variante nel locus OR6A2 associato alla percezione del coriandolo. Effetto piccolo, non determinante.",
+        },
+    },
+    {
+        "rs_id": "rs4481887", "gene": "OR2M7", "trait": "Odore della pipi' dopo gli asparagi",
+        "category": "APPEARANCE", "chrom": "1", "pos": 248333561, "ref": "A",
+        "interpretation": {
+            "REFERENCE": "Genotipo AA in un cluster di recettori olfattivi (OR2M7): tendenzialmente CAPACE di sentire l'odore caratteristico dell'urina dopo aver mangiato asparagi (quasi tutti lo PRODUCONO; non tutti lo percepiscono).",
+            "CARRIED": "Porti l'allele G (anosmia per gli asparagi): associato a ridotta capacita' di percepire quell'odore. In eterozigosi l'effetto e' parziale.",
+        },
+    },
+    {
+        "rs_id": "rs10427255", "gene": "-", "trait": "Starnuto fotico (riflesso ACHOO)",
+        "category": "APPEARANCE", "chrom": "2", "pos": 145367955, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC: associato a maggior tendenza allo STARNUTO FOTICO (starnutire passando alla luce intensa). Riflesso innocuo, presente in ~1 persona su 4.",
+            "CARRIED": "Porti l'allele T: minor tendenza allo starnuto fotico rispetto a CC.",
+        },
+    },
+    {
+        "rs_id": "rs3827760", "gene": "EDAR", "trait": "Spessore dei capelli / incisivi a pala",
+        "category": "APPEARANCE", "chrom": "2", "pos": 108897145, "ref": "A",
+        "interpretation": {
+            "REFERENCE": "Genotipo AA (ancestrale, europeo/africano): capelli di spessore tipico e incisivi 'piatti'.",
+            "CARRIED": "Porti l'allele G (EDAR Val370Ala, derivato): capelli piu' SPESSI, piu' ghiandole sudoripare e incisivi 'a pala' (scavati sul retro). Variante selezionata in Asia orientale e nelle Americhe.",
+        },
+    },
+    {
+        "rs_id": "rs6152", "gene": "AR", "trait": "Calvizie androgenetica (X)",
+        "category": "APPEARANCE", "chrom": "X", "pos": 67545785, "ref": "G",
+        "interpretation": {
+            "REFERENCE": "Allele G al recettore degli androgeni (AR, cromosoma X — nei maschi una sola copia): associato a rischio MINORE di calvizie androgenetica. NB: la calvizie e' poligenica, questo e' solo uno dei loci (il principale e' su X, ereditato dalla madre).",
+            "CARRIED": "Porti l'allele A (AR): associato a rischio MAGGIORE di calvizie androgenetica. E' un fattore tra molti, non una condanna.",
+        },
+    },
+    {
+        "rs_id": "rs12203592", "gene": "IRF4", "trait": "Lentiggini & fotosensibilita'",
+        "category": "APPEARANCE", "chrom": "6", "pos": 396321, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC: minor tendenza alle lentiggini legata a questo locus (IRF4 regola la melanogenesi).",
+            "CARRIED": "Porti l'allele T (IRF4): associato a piu' LENTIGGINI, maggior sensibilita' al sole/fotoinvecchiamento e capelli leggermente piu' chiari. Uno dei locus piu' forti per le lentiggini.",
+        },
+    },
+    {
+        "rs_id": "rs16891982", "gene": "SLC45A2", "trait": "Pigmentazione (pelle/capelli/occhi)",
+        "category": "APPEARANCE", "chrom": "5", "pos": 33951588, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC (ancestrale): pigmentazione piu' scura a questo locus; frequente fuori Europa.",
+            "CARRIED": "Porti l'allele G (SLC45A2 Phe374Leu): allele di pelle/capelli/occhi piu' CHIARI, quasi fissato in Europa (>90%). In eterozigosi contribuisce parzialmente.",
+        },
+    },
+    {
+        "rs_id": "rs1042602", "gene": "TYR", "trait": "Lentiggini & abbronzatura (TYR)",
+        "category": "APPEARANCE", "chrom": "11", "pos": 89178528, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC alla tirosinasi (TYR): pigmentazione di riferimento a questo sito.",
+            "CARRIED": "Porti l'allele A (TYR Ser192Tyr): associato a piu' LENTIGGINI, pelle che si scotta piu' facilmente e occhi leggermente piu' chiari.",
+        },
+    },
+    {
+        "rs_id": "rs2153271", "gene": "BNC2", "trait": "Lentiggini (BNC2)",
+        "category": "APPEARANCE", "chrom": "9", "pos": 16864523, "ref": "C",
+        "interpretation": {
+            "REFERENCE": "Genotipo CC al locus BNC2: minor contributo alle lentiggini da questo gene.",
+            "CARRIED": "Porti l'allele T (BNC2): associato a maggior tendenza alle LENTIGGINI e a pelle chiara. BNC2 e' anche un locus introgresso dai Neanderthal.",
+        },
+    },
+    {
+        "rs_id": "rs11803731", "gene": "TCHH", "trait": "Capelli lisci vs ricci",
+        "category": "APPEARANCE", "chrom": "1", "pos": 152110849, "ref": "A",
+        "interpretation": {
+            "REFERENCE": "Genotipo AA alla tricoialina (TCHH): tendenza a capelli piu' ondulati/ricci rispetto a chi porta l'allele 'liscio' (negli europei).",
+            "CARRIED": "Porti l'allele T (TCHH): associato a capelli piu' LISCI negli europei. Effetto piccolo, la forma del capello e' poligenica.",
+        },
+    },
+    {
+        "rs_id": "rs12821256", "gene": "KITLG", "trait": "Capelli biondi",
+        "category": "APPEARANCE", "chrom": "12", "pos": 88934558, "ref": "T",
+        "interpretation": {
+            "REFERENCE": "Genotipo TT al locus KITLG: non porti l'allele associato ai capelli biondi a questo sito.",
+            "CARRIED": "Porti l'allele C (KITLG): associato a capelli piu' BIONDI negli europei (regola un enhancer di KITLG nel follicolo).",
+        },
+    },
+    {
+        "rs_id": "rs838133", "gene": "FGF21", "trait": "Preferenza per i dolci",
+        "category": "APPEARANCE", "chrom": "19", "pos": 48756272, "ref": "A",
+        "interpretation": {
+            "REFERENCE": "Genotipo AA in FGF21 (ormone che modula l'appetito per i carboidrati): associato a un consumo di zuccheri/dolci tendenzialmente PIU' ALTO. Curiosamente l'allele 'goloso' e' qui il riferimento.",
+            "CARRIED": "Porti l'allele G in FGF21: associato a un consumo di dolci tendenzialmente minore. Effetto piccolo, l'alimentazione conta molto di piu'.",
+        },
+    },
 ]
 
 # Shared verdict for sites with no reliable call.
