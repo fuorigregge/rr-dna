@@ -193,7 +193,18 @@ PGS_SCORES = [
     {
         "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità", "kind": "trait",
         "label": "Longevità (PRS-5, Tesi 2021)",
-        "description": "Score di 330 SNP associati alla longevità (europei). Cattura un effetto genetico piccolo: stile di vita, ambiente e fortuna restano di gran lunga i fattori dominanti. Curiosità, non una previsione.",
+        "description": (
+            "330 SNP comuni che separano i centenari dagli anziani normali (Tesi 2021). "
+            "È un'associazione su gruppi, non una previsione individuale: spiega <1% della "
+            "varianza della durata di vita. Nel paper la differenza tra gli estremi dello "
+            "score è di ~4 anni di sopravvivenza media; per chi sta sotto la mediana l'effetto "
+            "atteso è una frazione di questo (ordine di un anno), con ampia incertezza. "
+            "Un percentile basso è la condizione normale: i centenari sono outlier rari, "
+            "arricchiti di varianti protettive che quasi nessuno porta — non averle non è un "
+            "difetto. Stile di vita, ambiente e fattori che lo score non vede (varianti rare, "
+            "il profilo di rischio malattia) pesano molto di più. Misura la predisposizione "
+            "alla longevità ECCEZIONALE, non l'aspettativa di vita ordinaria."
+        ),
     },
 ]
 
