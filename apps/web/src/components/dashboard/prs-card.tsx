@@ -2,6 +2,16 @@ import { Link } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { effectiveZ, isProtectiveTrait, protectiveNote } from '@/lib/prs-direction';
 
+export interface PrsDistribution {
+  mean?: number | null;
+  median?: number | null;
+  sd?: number | null;
+  nSamples?: number | null;
+  binStart?: number | null;
+  binWidth?: number | null;
+  counts: number[];
+}
+
 export interface PrsResult {
   id: string;
   traitKey: string;
@@ -19,6 +29,7 @@ export interface PrsResult {
   markersUsed: number;
   markersTotal: number;
   interpretation?: string | null;
+  distribution?: PrsDistribution | null;
 }
 
 const TOP_N = 5;

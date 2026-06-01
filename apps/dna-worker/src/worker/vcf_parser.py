@@ -302,6 +302,7 @@ def persist_pgs_results(conn, vcf_file_id: str, pgs_obs: dict, pgs_ref: set) -> 
                 "markers_ref_assumed": r["markers_ref_assumed"],
                 "markers_ref_resolved": r.get("markers_ref_resolved", 0),
                 "markers_ref_skipped": r.get("markers_ref_skipped", 0),
+                "distribution": r.get("distribution"),
             },
             pgs_id=r["pgs_id"], source="pgs_catalog",
             calibration_source=r.get("calibration_source"),

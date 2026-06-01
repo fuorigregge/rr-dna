@@ -191,8 +191,8 @@ PGS_SCORES = [
         "description": "Score di 255 SNP per la preferenza mattutina (UK Biobank, europei). Un valore alto tende al mattiniero, basso al serotino — tratto non patologico, l'ambiente (luce, abitudini, età) pesa molto.",
     },
     {
-        "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità", "kind": "trait",
-        "label": "Longevità (PRS-5, Tesi 2021)",
+        "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità (eccezionale)", "kind": "trait",
+        "label": "Longevità eccezionale (PRS-5, Tesi 2021)",
         "description": (
             "330 SNP comuni che separano i centenari dagli anziani normali (Tesi 2021). "
             "È un'associazione su gruppi, non una previsione individuale: spiega <1% della "
@@ -463,5 +463,23 @@ def call_all_pgs(pgs_observations: dict, pgs_ref_covered: set, references: dict 
             **score,
             **res,
             "interpretation": interp,
+            "distribution": _distribution_from_ref(ref),
         })
     return out
+
+
+def _distribution_from_ref(ref: dict | None) -> dict | None:
+    """Estrae dalla calibrazione empirica i dati per disegnare la curva di
+    distribuzione (istogramma 1000G + media/mediana/σ). None se non calibrato."""
+    if not ref or "hist" not in ref:
+        return None
+    h = ref["hist"]
+    return {
+        "mean": ref.get("mean"),
+        "median": ref.get("median"),
+        "sd": ref.get("sd"),
+        "nSamples": ref.get("n_samples"),
+        "binStart": h.get("binStart"),
+        "binWidth": h.get("binWidth"),
+        "counts": h.get("counts"),
+    }

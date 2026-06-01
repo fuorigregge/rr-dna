@@ -156,11 +156,16 @@ export class DashboardService {
   }
 
   // Polygenic Risk Scores per VCF, ordered T2D-then-CAD by trait key.
+  // Espone la distribuzione empirica (per la curva nel dettaglio) estraendola da metadata.
   async getPrsResults(vcfFileId: string) {
-    return this.prisma.prsResult.findMany({
+    const rows = await this.prisma.prsResult.findMany({
       where: { vcfFileId },
       orderBy: { traitKey: 'asc' },
     });
+    return rows.map((r) => ({
+      ...r,
+      distribution: (r.metadata as { distribution?: unknown } | null)?.distribution ?? null,
+    }));
   }
 
   // Reperti malattia per il referto PDF, arricchiti col verdetto di attendibilità.

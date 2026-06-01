@@ -141,13 +141,31 @@ def compute_references(kg_vcfs: list[Path], progress=None) -> dict[str, dict]:
             continue
         out[pgs_id] = {
             "mean": statistics.mean(scores),
+            "median": statistics.median(scores),
             "sd": statistics.stdev(scores) if len(scores) > 1 else 0.0,
             "n_samples": len(scores),
             "markers_resolved": markers_resolved_per_pgs[pgs_id],
             "markers_unseen_in_kg": unseen_count_per_pgs[pgs_id],
             "trait_key": score["trait_key"],
+            "hist": _histogram(scores),
         }
     return out
+
+
+def _histogram(values: list[float], nbins: int = 36) -> dict:
+    """Istogramma empirico dei punteggi di riferimento, per disegnare la curva
+    di distribuzione nel frontend. Restituisce binStart/binWidth/counts."""
+    lo, hi = min(values), max(values)
+    if hi <= lo:
+        return {"binStart": lo, "binWidth": 0.0, "counts": [len(values)]}
+    width = (hi - lo) / nbins
+    counts = [0] * nbins
+    for v in values:
+        i = int((v - lo) / width)
+        if i >= nbins:
+            i = nbins - 1
+        counts[i] += 1
+    return {"binStart": lo, "binWidth": width, "counts": counts}
 
 
 def save_references(refs: dict[str, dict]) -> None:

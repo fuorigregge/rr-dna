@@ -42,6 +42,7 @@ export const PRS_RESULTS_QUERY = `
   query PrsResults($vcfFileId: ID!) {
     prsResults(vcfFileId: $vcfFileId) {
       id traitKey trait label description pgsId source calibrationSource rawScore expectedMean expectedSd zScore percentile markersUsed markersTotal interpretation
+      distribution { mean median sd nSamples binStart binWidth counts }
     }
   }
 `;

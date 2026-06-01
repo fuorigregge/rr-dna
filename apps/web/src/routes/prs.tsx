@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AiSummaryProvider, AiSummaryButton, AiSummaryCard } from '@/components/ai-summary';
 import { effectiveZ, isProtectiveTrait, protectiveNote } from '@/lib/prs-direction';
 import type { PrsResult } from '@/components/dashboard/prs-card';
+import { PrsDistributionChart } from '@/components/prs-distribution-chart';
 
 export const Route = createFileRoute('/prs')({ component: PrsPage });
 
@@ -164,6 +165,9 @@ function PrsRow({ r, expanded, onToggle }: { r: PrsResult; expanded: boolean; on
       {expanded && (
         <div className="px-2 pb-4 pt-1 space-y-2 bg-secondary/20">
           {r.description && <p className="text-xs text-foreground/80 leading-relaxed">{r.description}</p>}
+          {r.distribution && calibrated && (
+            <PrsDistributionChart dist={r.distribution} rawScore={r.rawScore} percentile={r.percentile} />
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div>
               <span className="text-muted-foreground">Marker usati</span>
