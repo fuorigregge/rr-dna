@@ -26,12 +26,14 @@ const CATEGORY_OF: Record<string, CategoryKey> = {
   PANC_PGS: 'cancer', THYROID_PGS: 'cancer',
   CAD_PGS: 'cardio', STROKE_PGS: 'cardio',
   HF_PGS: 'cardio', AFLUTTER_PGS: 'cardio', VTE_PGS: 'cardio', LDL_PGS: 'cardio',
+  LPA_PGS: 'cardio', AFIB_PGS: 'cardio', SBP_PGS: 'cardio',
   T2D_PGS: 'metabolic', T2D_DGRS: 'metabolic', T1D_PGS: 'metabolic',
   BMI_PGS: 'metabolic', HBA1C_PGS: 'metabolic', URATE_PGS: 'metabolic', GOUT_PGS: 'metabolic',
   CD_PGS: 'autoimmune', ASTHMA_PGS: 'autoimmune',
-  ALZ_PGS: 'neuro',
+  CROHN_PGS: 'autoimmune', RA_PGS: 'autoimmune', PSORIASIS_PGS: 'autoimmune',
+  ALZ_PGS: 'neuro', PARKINSON_PGS: 'neuro',
   BMD_PGS: 'bone',
-  IOP_PGS: 'eye', GLAUCOMA_PGS: 'eye',
+  IOP_PGS: 'eye', GLAUCOMA_PGS: 'eye', AMD_PGS: 'eye',
 };
 
 const CATEGORY_META: Record<CategoryKey, { label: string; color: string }> = {

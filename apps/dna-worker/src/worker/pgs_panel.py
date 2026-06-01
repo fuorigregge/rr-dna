@@ -176,6 +176,46 @@ PGS_SCORES = [
         "pgs_id": "PGS000350", "trait_key": "GLAUCOMA_PGS", "trait": "Glaucoma ad angolo aperto",
         "label": "Glaucoma POAG (GRS12)", "description": "Score di 12 SNP per il glaucoma primario ad angolo aperto.",
     },
+    {
+        "pgs_id": "PGS000689", "trait_key": "LPA_PGS", "trait": "Lipoproteina(a) — Lp(a)",
+        "label": "Lipoproteina(a) (Sinnott-Armstrong 2021, 8,3K SNP)",
+        "description": "Score di ~8.300 SNP per i livelli di Lp(a): forte fattore di rischio cardiovascolare e di stenosi aortica, in gran parte determinato geneticamente. Misurabile una volta e azionabile.",
+    },
+    {
+        "pgs_id": "PGS000035", "trait_key": "AFIB_PGS", "trait": "Fibrillazione atriale",
+        "label": "Fibrillazione atriale (Weng 2017, 1.168 SNP)",
+        "description": "Score di 1.168 SNP per la fibrillazione atriale, l'aritmia sostenuta piu' comune (rilevante per il rischio di ictus).",
+    },
+    {
+        "pgs_id": "PGS000301", "trait_key": "SBP_PGS", "trait": "Pressione arteriosa sistolica",
+        "label": "Pressione sistolica (Xie 2020, 970 SNP)",
+        "description": "Score di 970 SNP per la pressione arteriosa sistolica — proxy del rischio di ipertensione.",
+    },
+    {
+        "pgs_id": "PGS002269", "trait_key": "AMD_PGS", "trait": "Degenerazione maculare (AMD)",
+        "label": "Degenerazione maculare (Zekavat 2022, 47 SNP)",
+        "description": "Score di 47 SNP per la degenerazione maculare legata all'eta', dominata da CFH/ARMS2. Fortemente genetica e azionabile (non fumare; integratori AREDS se a rischio).",
+    },
+    {
+        "pgs_id": "PGS000902", "trait_key": "PARKINSON_PGS", "trait": "Malattia di Parkinson",
+        "label": "Parkinson (Nalls 2019, 90 SNP)",
+        "description": "Score di 90 SNP per la malattia di Parkinson (Nalls 2019, la principale GWAS della patologia).",
+    },
+    {
+        "pgs_id": "PGS001331", "trait_key": "CROHN_PGS", "trait": "Malattia di Crohn",
+        "label": "Crohn (Tanigawa 2022, 257 SNP)",
+        "description": "Score di 257 SNP per la malattia di Crohn (malattia infiammatoria cronica intestinale).",
+    },
+    {
+        "pgs_id": "PGS002745", "trait_key": "RA_PGS", "trait": "Artrite reumatoide",
+        "label": "Artrite reumatoide (Ishigaki 2022, 2,6K SNP)",
+        "description": "Score di ~2.600 SNP per l'artrite reumatoide (Ishigaki 2022, ampia GWAS trans-etnica).",
+    },
+    {
+        "pgs_id": "PGS004315", "trait_key": "PSORIASIS_PGS", "trait": "Psoriasi",
+        "label": "Psoriasi (Bui 2023, 88 SNP)",
+        "description": "Score di 88 SNP per la psoriasi (dermatosi infiammatoria cronica).",
+    },
     # --- Tratti non-malattia (kind="trait"): non sono rischi clinici ma posizioni
     #     su uno spettro fenotipico. Score compatti (hit genome-wide), catturano
     #     una frazione limitata della varianza → indicativi sulla direzione, non
