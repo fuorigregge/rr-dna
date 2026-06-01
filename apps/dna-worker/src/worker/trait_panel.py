@@ -90,6 +90,32 @@ TRAIT_PANEL = [
             "CARRIED": "Porti l'allele 677T: ridotta attivita' MTHFR -> metabolismo dei folati ridotto (CT lieve, TT marcato); rilevante per folati e omocisteina.",
         },
     },
+    # Via del glutatione (substrato rifornito dalla N-acetilcisteina/NAC). Varianti
+    # comuni a piccolo effetto sugli enzimi di sintesi/uso del glutatione.
+    {
+        "rs_id": "rs17883901", "gene": "GCLC", "trait": "Via del glutatione - sintesi (GCLC)",
+        "category": "METABOLISM", "chrom": "6", "pos": 53545239, "ref": "G",
+        "interpretation": {
+            "REFERENCE": "Promotore GCLC di riferimento: sintesi del glutatione nella norma.",
+            "CARRIED": "Porti l'allele a minore espressione del promotore GCLC (-129): enzima LIMITANTE della sintesi del glutatione un po' meno attivo. La NAC fornisce il substrato (cisteina) di questo passo.",
+        },
+    },
+    {
+        "rs_id": "rs1050450", "gene": "GPX1", "trait": "Via del glutatione - antiossidante (GPX1)",
+        "category": "METABOLISM", "chrom": "3", "pos": 49357401, "ref": "G",
+        "interpretation": {
+            "REFERENCE": "Genotipo Pro198 (riferimento): attivita' glutatione perossidasi standard.",
+            "CARRIED": "Porti l'allele Leu198 (rs1050450): attivita' GPX1 tendenzialmente ridotta (usa il glutatione per neutralizzare i perossidi).",
+        },
+    },
+    {
+        "rs_id": "rs1695", "gene": "GSTP1", "trait": "Via del glutatione - detossificazione (GSTP1)",
+        "category": "METABOLISM", "chrom": "11", "pos": 67585218, "ref": "A",
+        "interpretation": {
+            "REFERENCE": "Genotipo Ile105 (riferimento): attivita' GSTP1 standard nella detossificazione glutatione-dipendente.",
+            "CARRIED": "Porti l'allele Val105 (rs1695): attivita' GSTP1 alterata verso alcuni substrati (enzima glutatione-dipendente).",
+        },
+    },
     {
         "rs_id": "rs1801131", "gene": "MTHFR", "trait": "Metabolismo dei folati (MTHFR A1298C)",
         "category": "METABOLISM", "chrom": "1", "pos": 11794419, "ref": "T",

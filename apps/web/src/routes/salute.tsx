@@ -12,13 +12,14 @@ const TRAIT_QUERY = `query($vcfFileId: String!) { traitPanel(vcfFileId: $vcfFile
 const PHARMA_QUERY = `query($vcfFileId: String!) { pharmacoPanel(vcfFileId: $vcfFileId) { gene diplotype phenotype drugs } }`;
 
 type Tier = 'strong' | 'plausible';
-type Tag = 'farmaco' | 'integratore' | 'alimento';
+type Tag = 'farmaco' | 'integratore' | 'alimento' | 'stile';
 type TraitState = 'REFERENCE' | 'CARRIED' | 'NOT_COVERED';
 
 const TAG_META: Record<Tag, { label: string; cls: string }> = {
   farmaco: { label: 'Farmaco', cls: 'bg-rose-500/15 text-rose-700 dark:text-rose-400' },
   integratore: { label: 'Integratore', cls: 'bg-violet-500/15 text-violet-700 dark:text-violet-400' },
   alimento: { label: 'Alimento', cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
+  stile: { label: 'Stile di vita', cls: 'bg-sky-500/15 text-sky-700 dark:text-sky-400' },
 };
 
 // Contenuto curato (scienza, NON dati personali): lo stato del soggetto arriva
@@ -95,6 +96,33 @@ const DIET: DietInsight[] = [
     consider: {
       CARRIED: 'Non-secretore (in omozigosi): B12 sierica tendenzialmente più alta e microbiota intestinale diverso (con resistenza ad alcuni norovirus). Per lo più informativo; nessuna azione specifica.',
       REFERENCE: 'Secretore: profilo B12/microbiota di riferimento.',
+    },
+  },
+  {
+    rsId: 'rs16969968', title: 'Nicotina / dipendenza (CHRNA5)', tags: ['stile'], tier: 'strong',
+    evidence: 'GWAS replicato (dipendenza nicotinica)',
+    links: [{ label: 'SNPedia', url: 'https://www.snpedia.com/index.php/Rs16969968' }],
+    consider: {
+      CARRIED: 'Variante associata a maggiore dipendenza da nicotina e consumo più alto nei fumatori. Azionabile e netto: un motivo in più per non iniziare a fumare o per smettere (con supporto). Non cambia nulla per chi non fuma.',
+      REFERENCE: 'Nessuna spinta genetica marcata alla dipendenza da nicotina su questo locus — il fumo resta comunque dannoso per tutti.',
+    },
+  },
+  {
+    rsId: 'rs1229984', title: 'Alcol (ADH1B)', tags: ['stile', 'alimento'], tier: 'plausible',
+    evidence: 'GWAS / farmacogenetica dell\'alcol',
+    links: [{ label: 'SNPedia', url: 'https://www.snpedia.com/index.php/Rs1229984' }],
+    consider: {
+      CARRIED: 'Metabolismo dell\'alcol nella norma per questo locus (variante comune europea); con ALDH2 normale, nessun "flush". La genetica qui non dà né lasciapassare né allarme: valgono le raccomandazioni generali di moderazione.',
+      REFERENCE: 'Metabolismo dell\'alcol standard su questo locus; valgono le raccomandazioni generali di moderazione.',
+    },
+  },
+  {
+    rsId: 'rs17883901', title: 'Glutatione / NAC (GCLC, GPX1, GSTP1)', tags: ['integratore'], tier: 'plausible',
+    evidence: 'Meccanicistico; non dimostrato clinicamente',
+    links: [{ label: 'GlyNAC (PubMed)', url: 'https://pubmed.ncbi.nlm.nih.gov/35975308/' }],
+    consider: {
+      CARRIED: 'Porti varianti eterozigoti che abbassano un po\' gli enzimi della via del glutatione (qui GCLC, il passo limitante della sintesi; vedi anche GPX1/GSTP1 in Tratti). La NAC rifornisce il substrato (cisteina) di questa via: razionale plausibile ma NON provato. L\'angolo "longevità" riguarda semmai GlyNAC (glicina+NAC), evidenza preliminare. Non è un\'indicazione a integrare.',
+      REFERENCE: 'Sintesi del glutatione di riferimento su questo locus: nessuna spinta particolare a supplementare la via.',
     },
   },
 ];
@@ -185,7 +213,7 @@ function SalutePage() {
 
       {/* Filtri per tag */}
       <div className="flex flex-wrap gap-2">
-        {(['all', 'farmaco', 'integratore', 'alimento'] as const).map((t) => (
+        {(['all', 'farmaco', 'integratore', 'alimento', 'stile'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTagFilter(t)}
