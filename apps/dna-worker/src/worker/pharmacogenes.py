@@ -328,7 +328,7 @@ def resolve_nat2(snp_genotypes: dict) -> tuple[str | None, str | None]:
     elif slow == 1:
         phen = "Acetilatore intermedio"
     else:
-        phen = "Acetilatore lento — maggior rischio di tossicita' da isoniazide/sulfamidici; clearance piu' lenta della caffeina"
+        phen = "Acetilatore lento — maggior rischio di tossicita' da isoniazide/idralazina/sulfamidici. La clearance della caffeina dipende soprattutto da CYP1A2, non da NAT2."
     return diplotype, phen
 
 
