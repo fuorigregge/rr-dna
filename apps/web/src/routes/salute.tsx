@@ -5,6 +5,7 @@ import { gqlClient } from '@/lib/graphql-client';
 import { useActiveVcf } from '@/lib/use-active-vcf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { AiSummaryProvider, AiSummaryButton, AiSummaryCard } from '@/components/ai-summary';
 
 export const Route = createFileRoute('/salute')({ component: SalutePage });
 
@@ -193,10 +194,14 @@ function SalutePage() {
   }
 
   return (
+    <AiSummaryProvider vcfFileId={activeFile.id} type="salute" title="Sintesi Salute personalizzata">
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h1 className="text-2xl font-bold">Salute personalizzata</h1>
+        <AiSummaryButton />
       </div>
+
+      <AiSummaryCard />
 
       {/* Disclaimer in evidenza */}
       <Card className="border-amber-500/30 bg-amber-500/5">
@@ -299,6 +304,7 @@ function SalutePage() {
         con un professionista sanitario.
       </p>
     </div>
+    </AiSummaryProvider>
   );
 }
 

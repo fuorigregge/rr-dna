@@ -110,6 +110,8 @@ export class AiService {
         return this.buildPrsPrompt(vcfFileId);
       case 'ancestry':
         return this.buildAncestryPrompt(vcfFileId);
+      case 'salute':
+        return this.buildSalutePrompt(vcfFileId);
       case 'overview':
         return this.buildOverviewPrompt(vcfFileId);
       default:
@@ -263,6 +265,54 @@ Concentrati su:
 - Segnala interazioni farmaco-farmaco note se emergono dai dati
 - Usa terminologia medica ma spiega i termini tra parentesi
 - IMPORTANTE: usa le lettere accentate italiane (à, è, ì, ò, ù), MAI apostrofi al posto degli accenti`;
+  }
+
+  private async buildSalutePrompt(vcfFileId: string): Promise<string> {
+    // Sintesi azionabile: pannello farmacogeni (attenzioni) + tratti dieta/nutriente/
+    // stile di vita sorvegliati dalla sezione Salute. Stesso ethos onesto della pagina.
+    const SALUTE_RS = [
+      'rs4988235', 'rs1800562', 'rs2282679', 'rs10741657', 'rs12785878', 'rs1801133',
+      'rs174537', 'rs762551', 'rs601338', 'rs16969968', 'rs1229984', 'rs671',
+      'rs17883901', 'rs1050450', 'rs1695',
+    ];
+    const pharma = await this.prisma.pharmacoResult.findMany({ where: { vcfFileId }, orderBy: { gene: 'asc' } });
+    const pharmaJson = pharma.map(p => ({ gene: p.gene, diplotipo: p.diplotype, fenotipo: p.phenotype, farmaci: p.drugs }));
+
+    const traits = await this.prisma.traitPanelResult.findMany({
+      where: { vcfFileId, rsId: { in: SALUTE_RS } },
+      orderBy: { gene: 'asc' },
+    });
+    const traitsJson = traits.map(t => ({
+      gene: t.gene, rsId: t.rsId, tratto: t.trait, stato: t.state,
+      genotipo: t.genotype, interpretazione: t.interpretation,
+    }));
+
+    return `Sei un consulente che sintetizza, per un programmatore (non medico), cosa il SUO DNA e la ricerca suggeriscono su farmaci, integratori, alimenti e stile di vita. Rispondi in italiano e in Markdown.
+
+ETHOS OBBLIGATORIO — onestà sopra l'hype:
+- NON sono prescrizioni. Non dire mai "prendi X". Sono considerazioni da portare a un medico o nutrizionista.
+- La farmacogenomica indica COME usare un farmaco eventualmente prescritto, NON quali farmaci assumere per stare bene.
+- Per gli integratori l'evidenza guidata dal genotipo è quasi sempre debole: nessuno "stack" è dimostrato. Dillo.
+- Distingui esplicitamente AZIONABILE (linee guida/evidenza forte) da PLAUSIBILE (meccanicistico, non provato).
+- Sono varianti comuni a piccolo effetto: niente allarmismi né promesse.
+
+FORMATO:
+1. PRIMO PARAGRAFO: riassunto breve (2-3 frasi), senza heading.
+2. Dopo una riga vuota, DETTAGLIO con heading markdown: ## Farmaci (attenzioni), ## Alimenti, ## Integratori, ## Stile di vita. Ometti una sezione se non ci sono dati rilevanti.
+
+PANNELLO FARMACOGENI (fenotipo reale per gene). I geni con fenotipo NON normale sono le attenzioni da segnalare al medico se quei farmaci vengono prescritti:
+${JSON.stringify(pharmaJson, null, 2)}
+
+TRATTI dieta / nutrienti / stile di vita (lo stato è il genotipo reale del soggetto):
+${JSON.stringify(traitsJson, null, 2)}
+
+Concentrati su:
+- Farmaci: solo le attenzioni reali (fenotipo non normale), inquadrate come "se prescritto X…".
+- Alimenti: indicazioni concrete dove l'evidenza regge (lattosio, ferro/HFE, alcol) — cosa preferire/limitare, senza diete miracolose.
+- Integratori: dove ha senso MISURARE prima (es. vitamina D, B12, omocisteina per MTHFR); ribadisci che il genotipo non prescrive integratori.
+- Stile di vita: nicotina/alcol — messaggi netti e onesti.
+- Chiudi NON con un elenco di acquisti, ma con "cosa misurare / cosa discutere col medico".
+- IMPORTANTE: usa le lettere accentate italiane (à, è, ì, ò, ù), MAI apostrofi al posto degli accenti.`;
   }
 
   private async buildCarrierPrompt(vcfFileId: string): Promise<string> {
