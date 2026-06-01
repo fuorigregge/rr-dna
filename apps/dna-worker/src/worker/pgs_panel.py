@@ -191,8 +191,8 @@ PGS_SCORES = [
         "description": "Score di 255 SNP per la preferenza mattutina (UK Biobank, europei). Un valore alto tende al mattiniero, basso al serotino — tratto non patologico, l'ambiente (luce, abitudini, età) pesa molto.",
     },
     {
-        "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità (eccezionale)", "kind": "trait",
-        "label": "Longevità eccezionale (PRS-5, Tesi 2021)",
+        "pgs_id": "PGS000906", "trait_key": "LONGEVITY_PGS", "trait": "Longevità (ultracentenari)", "kind": "trait",
+        "label": "Longevità ultracentenari (PRS-5, Tesi 2021)",
         "description": (
             "330 SNP COMUNI che separano i centenari dagli anziani normali (Tesi 2021). "
             "Essendo varianti comuni sommate, il punteggio è distribuito ~normalmente: è un "
