@@ -236,12 +236,12 @@ function SalutePage() {
             salute cardiometabolica (pressione/glicemia/lipidi), alcol moderato, protezione solare, legami sociali.
           </p>
           <div className="text-muted-foreground leading-snug">
-            <span className="text-foreground font-medium">Dove il tuo DNA raffina:</span>
+            <span className="text-foreground font-medium">Dove il DNA può raffinare</span> (le voci qui sotto sono calcolate sul tuo profilo a runtime):
             <ul className="list-disc list-inside space-y-0.5 mt-1">
-              <li><strong>Non fumare conta doppio</strong> — una componente genetica (CHRNA5) puo' rendere la nicotina più tenace (vedi “Nicotina”).</li>
-              <li><strong>Misura l’omocisteina</strong> — MTHFR (variante): se alta, folati/B12 la abbassano (rischio cardio/cognitivo).</li>
-              <li><strong>Mantieni la vitamina D</strong> — alcuni profili tendono a valori bassi (vedi “Vitamina D”).</li>
-              <li><strong>Via glutatione/NAC</strong> — razionale plausibile, non provato (vedi card dedicata).</li>
+              <li><strong>Non fumare conta doppio</strong> — la dipendenza da nicotina ha una componente genetica (CHRNA5): chi porta la variante fatica di più a smettere. Vedi “Nicotina”.</li>
+              <li><strong>Omocisteina</strong> — con una variante MTHFR a minore attività conviene misurarla: se alta, folati/B12 la abbassano. Vedi “Folati / MTHFR”.</li>
+              <li><strong>Vitamina D</strong> — alcuni profili genetici tendono a valori bassi: misurala e correggi se serve. Vedi “Vitamina D”.</li>
+              <li><strong>Via glutatione/NAC</strong> — razionale plausibile, non provato. Vedi card dedicata.</li>
             </ul>
           </div>
           <p className="text-xs text-amber-600 dark:text-amber-400 leading-snug">
