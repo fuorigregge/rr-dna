@@ -19,4 +19,7 @@ export class AiSummaryObject {
 
   @Field()
   createdAt!: Date;
+
+  @Field()
+  updatedAt!: Date;
 }

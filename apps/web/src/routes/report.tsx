@@ -30,13 +30,14 @@ const REPORT_QUERY = `
     haplogroups(vcfFileId: $sid) { id lineage haplogroup detail quality source interpretation }
     neanderthal(vcfFileId: $sid) { estPercent relativeLoad archaicAlleles coveredSites observedFraction expectedFraction }
     prsResults(vcfFileId: $vcfFileId) { id traitKey trait pgsId zScore percentile rawScore calibrationSource }
-    s_overview: aiSummary(vcfFileId: $sid, type: "overview") { summary detail createdAt }
+    s_overview: aiSummary(vcfFileId: $sid, type: "overview") { summary detail createdAt updatedAt }
     s_diseases: aiSummary(vcfFileId: $sid, type: "diseases") { summary detail }
     s_prs: aiSummary(vcfFileId: $sid, type: "prs") { summary detail }
     s_pharma: aiSummary(vcfFileId: $sid, type: "pharma") { summary detail }
     s_carrier: aiSummary(vcfFileId: $sid, type: "carrier") { summary detail }
     s_traits: aiSummary(vcfFileId: $sid, type: "traits") { summary detail }
     s_ancestry: aiSummary(vcfFileId: $sid, type: "ancestry") { summary detail }
+    s_salute: aiSummary(vcfFileId: $sid, type: "salute") { summary detail }
   }
 `;
 
@@ -68,6 +69,7 @@ const SECTIONS: Array<{ type: string; label: string; cats: string[] }> = [
   { type: 'carrier', label: 'Stato di portatore', cats: ['carrier'] },
   { type: 'traits', label: 'Tratti fenotipici', cats: ['trait'] },
   { type: 'ancestry', label: 'Ancestralità', cats: ['haplogroup'] },
+  { type: 'salute', label: 'Salute personalizzata', cats: [] },
 ];
 
 function DiseaseChart({ c }: { c: any }) {
@@ -584,7 +586,9 @@ function ReportPage() {
 
   const stats = data.dashboardStats;
   const overview = data.s_overview;
-  const generated = overview?.createdAt ? new Date(overview.createdAt) : new Date();
+  const generated = overview?.updatedAt || overview?.createdAt
+    ? new Date(overview.updatedAt || overview.createdAt)
+    : new Date();
 
   const headerStats = [
     { label: 'Varianti', value: stats.totalVariants.toLocaleString('it-IT') },

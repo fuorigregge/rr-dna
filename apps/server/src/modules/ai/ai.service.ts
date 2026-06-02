@@ -584,8 +584,9 @@ Concentrati su:
       carrier: 'Stato di portatore',
       traits: 'Tratti fenotipici',
       ancestry: 'Ancestralità',
+      salute: 'Salute personalizzata',
     };
-    const order = ['diseases', 'prs', 'pharma', 'carrier', 'traits', 'ancestry'];
+    const order = ['diseases', 'prs', 'pharma', 'carrier', 'traits', 'ancestry', 'salute'];
 
     const sections = await this.prisma.aiSummary.findMany({
       where: { vcfFileId, type: { in: order } },
