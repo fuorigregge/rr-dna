@@ -82,6 +82,53 @@ model VcfFile {
   carrierPanelResults CarrierPanelResult[]
   prsResults          PrsResult[]
   neanderthal         NeanderthalResult?
+  patientProfile      PatientProfile?
+  labResults          LabResult[]
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// Anagrafica del soggetto (cartella clinica). Dati personali: restano nel DB locale.
+model PatientProfile {
+  id        String    @id @default(uuid())
+  vcfFileId String    @unique
+  fullName  String?
+  birthDate DateTime?
+  sex       Sex?
+  bloodType String?
+  heightCm  Float?
+  weightKg  Float?
+  notes     String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+}
+
+// Referto/esame del sangue inserito manualmente. geneticKey collega al finding
+// genomico (es. "LPA_PGS" per la Lp(a)) per il confronto predetto-vs-misurato.
+model LabResult {
+  id         String   @id @default(uuid())
+  vcfFileId  String
+  analyte    String
+  value      Float
+  unit       String
+  measuredAt DateTime
+  refLow     Float?
+  refHigh    Float?
+  refText    String?
+  geneticKey String?
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  vcfFile VcfFile @relation(fields: [vcfFileId], references: [id], onDelete: Cascade)
+
+  @@index([vcfFileId])
+  @@index([vcfFileId, analyte])
 }
 
 model PrsResult {

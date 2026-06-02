@@ -19,6 +19,7 @@ import { ChromosomesModule } from './modules/chromosomes/chromosomes.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AiModule } from './modules/ai/ai.module';
 import { TraitPanelModule } from './modules/trait-panel/trait-panel.module';
+import { CartellaModule } from './modules/cartella/cartella.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { TraitPanelModule } from './modules/trait-panel/trait-panel.module';
     DashboardModule,
     AiModule,
     TraitPanelModule,
+    CartellaModule,
     BullModule.forRootAsync({
       useFactory: () => {
         const url = new URL(process.env.REDIS_URL || 'redis://localhost:6379');
