@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { gqlClient } from '@/lib/graphql-client';
@@ -7,6 +7,12 @@ import { useMutationWithToast } from '@/lib/use-mutation-with-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectGroupLabel } from '@/components/ui/select';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { AiSummaryProvider, AiSummaryButton, AiSummaryCard } from '@/components/ai-summary';
 
 export const Route = createFileRoute('/cartella')({ component: CartellaPage });
 
@@ -20,27 +26,69 @@ const DEL_LAB = `mutation($id:ID!){ deleteLabResult(id:$id) }`;
 
 type Kind = 'prs' | 'trait';
 interface AnalyteDef {
-  key: string; label: string; unit: string; refText?: string; refLow?: number; refHigh?: number;
+  key: string; label: string; unit: string; group: string;
+  refText?: string; refLow?: number; refHigh?: number;
   geneticKey?: string; geneticKind?: Kind;
 }
-// Catalogo generico (valori di riferimento standard, NON dati personali). geneticKey
-// collega l'esame al finding genomico per il confronto predetto-vs-misurato.
+// Catalogo esami: unità e intervalli di riferimento tipici di un laboratorio italiano,
+// NON dati personali. `geneticKey` collega l'esame al finding genomico per il confronto
+// predetto-vs-misurato; gli esami senza chiave non hanno correlato genetico noto.
 const CATALOG: AnalyteDef[] = [
-  { key: 'lpa', label: 'Lipoproteina(a) — Lp(a)', unit: 'nmol/L', refText: '< 75 nmol/L (≈ <30 mg/dL)', refHigh: 75, geneticKey: 'LPA_PGS', geneticKind: 'prs' },
-  { key: 'apob', label: 'ApoB', unit: 'mg/dL', refText: '< 100 mg/dL (più basso se rischio alto)', refHigh: 100 },
-  { key: 'ldl', label: 'Colesterolo LDL', unit: 'mg/dL', refText: '< 100 mg/dL', refHigh: 100, geneticKey: 'LDL_PGS', geneticKind: 'prs' },
-  { key: 'hdl', label: 'Colesterolo HDL', unit: 'mg/dL', refText: '> 40' },
-  { key: 'tg', label: 'Trigliceridi', unit: 'mg/dL', refText: '< 150 mg/dL', refHigh: 150 },
-  { key: 'hcy', label: 'Omocisteina', unit: 'µmol/L', refText: '< 15 µmol/L', refHigh: 15, geneticKey: 'rs1801133', geneticKind: 'trait' },
-  { key: 'vitd', label: 'Vitamina D (25-OH)', unit: 'ng/mL', refText: '30–100 ng/mL', refLow: 30, refHigh: 100, geneticKey: 'rs2282679', geneticKind: 'trait' },
-  { key: 'b12', label: 'Vitamina B12', unit: 'pg/mL', refText: '200–900 pg/mL', refLow: 200, refHigh: 900, geneticKey: 'rs601338', geneticKind: 'trait' },
-  { key: 'hba1c', label: 'Emoglobina glicata (HbA1c)', unit: '%', refText: '< 5.7%', refHigh: 5.7, geneticKey: 'HBA1C_PGS', geneticKind: 'prs' },
-  { key: 'ferritin', label: 'Ferritina', unit: 'ng/mL', refText: '30–400 ng/mL', refLow: 30, refHigh: 400, geneticKey: 'rs1800562', geneticKind: 'trait' },
-  { key: 'urate', label: 'Acido urico', unit: 'mg/dL', refText: '< 7 mg/dL', refHigh: 7, geneticKey: 'URATE_PGS', geneticKind: 'prs' },
-  { key: 'crp', label: 'hs-CRP', unit: 'mg/L', refText: '< 1 mg/L (basso rischio)', refHigh: 1 },
+  // Lipidi
+  { key: 'coltot', label: 'Colesterolo totale', unit: 'mg/dL', group: 'Lipidi', refText: 'desiderabile < 200 mg/dL', refHigh: 200 },
+  { key: 'ldl', label: 'Colesterolo LDL', unit: 'mg/dL', group: 'Lipidi', refText: 'desiderabile < 130 mg/dL', refHigh: 130, geneticKey: 'LDL_PGS', geneticKind: 'prs' },
+  { key: 'hdl', label: 'Colesterolo HDL', unit: 'mg/dL', group: 'Lipidi', refText: 'rischio basso > 60; rischio alto < 40 mg/dL', refLow: 40 },
+  { key: 'tg', label: 'Trigliceridi', unit: 'mg/dL', group: 'Lipidi', refText: 'desiderabile < 150 mg/dL', refHigh: 150 },
+  { key: 'lpa', label: 'Lipoproteina(a) — Lp(a)', unit: 'mg/dL', group: 'Lipidi', refText: 'desiderabile < 50 mg/dL', refHigh: 50, geneticKey: 'LPA_PGS', geneticKind: 'prs' },
+  { key: 'apob', label: 'ApoB', unit: 'mg/dL', group: 'Lipidi', refText: '< 100 mg/dL (più basso se rischio alto)', refHigh: 100 },
+  // Metaboliti e vitamine
+  { key: 'glucose', label: 'Glicemia', unit: 'mg/dL', group: 'Metaboliti e vitamine', refText: '70–105 mg/dL (a digiuno)', refLow: 70, refHigh: 105 },
+  { key: 'hba1c', label: 'Emoglobina glicata (HbA1c)', unit: '%', group: 'Metaboliti e vitamine', refText: '< 5.7%', refHigh: 5.7, geneticKey: 'HBA1C_PGS', geneticKind: 'prs' },
+  { key: 'urate', label: 'Acido urico', unit: 'mg/dL', group: 'Metaboliti e vitamine', refText: '3,5–7,2 mg/dL', refLow: 3.5, refHigh: 7.2, geneticKey: 'URATE_PGS', geneticKind: 'prs' },
+  { key: 'hcy', label: 'Omocisteina', unit: 'µmol/L', group: 'Metaboliti e vitamine', refText: '5–15 µmol/L', refLow: 5, refHigh: 15, geneticKey: 'rs1801133', geneticKind: 'trait' },
+  { key: 'vitd', label: 'Vitamina D (25-OH)', unit: 'nmol/L', group: 'Metaboliti e vitamine', refText: 'soglia terapeutica ≥ 50 nmol/L; tossicità > 250', refLow: 50, refHigh: 250, geneticKey: 'rs2282679', geneticKind: 'trait' },
+  { key: 'b12', label: 'Vitamina B12', unit: 'ng/L', group: 'Metaboliti e vitamine', refText: '180–914 ng/L (≡ pg/mL)', refLow: 180, refHigh: 914, geneticKey: 'rs601338', geneticKind: 'trait' },
+  { key: 'folate', label: 'Acido folico', unit: 'µg/L', group: 'Metaboliti e vitamine', refText: '3,1–19,9 µg/L', refLow: 3.1, refHigh: 19.9 },
+  { key: 'ferritin', label: 'Ferritina', unit: 'ng/mL', group: 'Metaboliti e vitamine', refText: '24–337 ng/mL', refLow: 24, refHigh: 337, geneticKey: 'rs1800562', geneticKind: 'trait' },
+  { key: 'crp', label: 'hs-CRP', unit: 'mg/L', group: 'Metaboliti e vitamine', refText: '< 1 mg/L (basso rischio)', refHigh: 1 },
+  // Funzione renale ed elettroliti
+  { key: 'creat', label: 'Creatinina', unit: 'mg/dL', group: 'Funzione renale ed elettroliti', refText: '0,60–1,20 mg/dL', refLow: 0.6, refHigh: 1.2 },
+  { key: 'egfr', label: 'eGFR (CKD-EPI)', unit: 'mL/min/1.73m²', group: 'Funzione renale ed elettroliti', refText: '> 90 mL/min/1.73m²', refLow: 90 },
+  { key: 'sodium', label: 'Sodio', unit: 'mmol/L', group: 'Funzione renale ed elettroliti', refText: '136–146 mmol/L', refLow: 136, refHigh: 146 },
+  { key: 'potassium', label: 'Potassio', unit: 'mmol/L', group: 'Funzione renale ed elettroliti', refText: '3,40–4,50 mmol/L', refLow: 3.4, refHigh: 4.5 },
+  // Fegato
+  { key: 'bili', label: 'Bilirubina totale', unit: 'mg/dL', group: 'Fegato', refText: '0,30–1,20 mg/dL', refLow: 0.3, refHigh: 1.2 },
+  { key: 'ast', label: 'AST (GOT)', unit: 'U/L', group: 'Fegato', refText: '0–50 U/L', refHigh: 50 },
+  { key: 'alt', label: 'ALT (GPT)', unit: 'U/L', group: 'Fegato', refText: '5–50 U/L', refLow: 5, refHigh: 50 },
+  { key: 'ggt', label: 'GGT', unit: 'U/L', group: 'Fegato', refText: '0–55 U/L', refHigh: 55 },
+  { key: 'alp', label: 'Fosfatasi alcalina (ALP)', unit: 'U/L', group: 'Fegato', refText: '30–120 U/L', refLow: 30, refHigh: 120 },
+  // Tiroide
+  { key: 'tsh', label: 'TSH', unit: 'µUI/mL', group: 'Tiroide', refText: '0,350–5,500 µUI/mL', refLow: 0.35, refHigh: 5.5 },
+  // Emocromo
+  { key: 'wbc', label: 'Leucociti', unit: '×10⁹/L', group: 'Emocromo', refText: '4,50–11,00 ×10⁹/L', refLow: 4.5, refHigh: 11 },
+  { key: 'rbc', label: 'Eritrociti', unit: '×10¹²/L', group: 'Emocromo', refText: '4,39–5,77 ×10¹²/L', refLow: 4.39, refHigh: 5.77 },
+  { key: 'hgb', label: 'Emoglobina', unit: 'g/dL', group: 'Emocromo', refText: '13,0–17,4 g/dL', refLow: 13, refHigh: 17.4 },
+  { key: 'hct', label: 'Ematocrito', unit: '%', group: 'Emocromo', refText: '40–52 %', refLow: 40, refHigh: 52 },
+  { key: 'mcv', label: 'MCV', unit: 'fL', group: 'Emocromo', refText: '82–98 fL', refLow: 82, refHigh: 98 },
+  { key: 'mch', label: 'MCH', unit: 'pg', group: 'Emocromo', refText: '25–34 pg', refLow: 25, refHigh: 34 },
+  { key: 'mchc', label: 'MCHC', unit: 'g/dL', group: 'Emocromo', refText: '32–36 g/dL', refLow: 32, refHigh: 36 },
+  { key: 'rdw', label: 'RDW', unit: '%', group: 'Emocromo', refText: '11,4–14,5 %', refLow: 11.4, refHigh: 14.5 },
+  { key: 'plt', label: 'Piastrine', unit: '×10⁹/L', group: 'Emocromo', refText: '140–450 ×10⁹/L', refLow: 140, refHigh: 450 },
+  { key: 'neut', label: 'Neutrofili', unit: '×10⁹/L', group: 'Emocromo', refText: '1,80–8,20 ×10⁹/L', refLow: 1.8, refHigh: 8.2 },
+  { key: 'lymph', label: 'Linfociti', unit: '×10⁹/L', group: 'Emocromo', refText: '1,18–3,62 ×10⁹/L', refLow: 1.18, refHigh: 3.62 },
+  { key: 'mono', label: 'Monociti', unit: '×10⁹/L', group: 'Emocromo', refText: '0,23–0,96 ×10⁹/L', refLow: 0.23, refHigh: 0.96 },
+  { key: 'eos', label: 'Eosinofili', unit: '×10⁹/L', group: 'Emocromo', refText: '0,03–0,74 ×10⁹/L', refLow: 0.03, refHigh: 0.74 },
+  { key: 'baso', label: 'Basofili', unit: '×10⁹/L', group: 'Emocromo', refText: '0,01–0,10 ×10⁹/L', refLow: 0.01, refHigh: 0.1 },
 ];
+const CATALOG_GROUPS: string[] = [...new Set(CATALOG.map((c) => c.group))];
+// ordine di catalogo per riga: gli esami di un'analisi si leggono come in un referto
+const CATALOG_ORDER: Record<string, number> = Object.fromEntries(CATALOG.map((c, i) => [c.label, i]));
 
 const SEX_LABEL: Record<string, string> = { MALE: 'Maschile', FEMALE: 'Femminile', OTHER: 'Altro' };
+const CATALOG_ITEMS: Record<string, string> = {
+  ...Object.fromEntries(CATALOG.map((c) => [c.key, c.label])),
+  custom: 'Altro (personalizzato)…',
+};
 
 function rangeStatus(v: number, lo?: number | null, hi?: number | null): 'in' | 'low' | 'high' | null {
   if (lo != null && v < lo) return 'low';
@@ -78,11 +126,26 @@ function CartellaPage() {
     return t ? `DNA: ${t.state === 'CARRIED' ? 'variante portata' : t.state === 'REFERENCE' ? 'riferimento' : 'non valutabile'}${t.genotype ? ` (${t.genotype})` : ''} — ${t.interpretation ?? ''}` : null;
   };
 
-  // raggruppa esami per analita, storico dal più recente
-  const grouped = useMemo(() => {
+  // raggruppa gli esami per analisi = sessione di prelievo (stessa data), più recente in cima
+  const analyses = useMemo(() => {
     const m = new Map<string, any[]>();
-    for (const l of labs) { if (!m.has(l.analyte)) m.set(l.analyte, []); m.get(l.analyte)!.push(l); }
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    for (const l of labs) {
+      const day = new Date(l.measuredAt).toISOString().slice(0, 10);
+      if (!m.has(day)) m.set(day, []);
+      m.get(day)!.push(l);
+    }
+    return [...m.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([day, rows]) => {
+        const ordered = rows.slice().sort((x, y) => (CATALOG_ORDER[x.analyte] ?? 999) - (CATALOG_ORDER[y.analyte] ?? 999));
+        let outOfRange = 0, measurable = 0;
+        for (const r of rows) {
+          const s = rangeStatus(r.value, r.refLow, r.refHigh);
+          if (s) measurable++;
+          if (s === 'high' || s === 'low') outOfRange++;
+        }
+        return { day, rows: ordered, outOfRange, measurable };
+      });
   }, [labs]);
 
   const invalidate = () => {
@@ -109,9 +172,14 @@ function CartellaPage() {
   if (!activeFile) return <div className="text-center text-muted-foreground py-12">Carica un file VCF per usare la cartella clinica.</div>;
 
   return (
+    <AiSummaryProvider vcfFileId={vid} type="cartella" title="Analisi referto">
     <div className="space-y-5">
-      <style>{`.inp{width:100%;border-radius:.375rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary)/.5);color:hsl(var(--foreground));padding:.375rem .5rem;font-size:.875rem}`}</style>
-      <h1 className="text-2xl font-bold">Cartella clinica</h1>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h1 className="text-2xl font-bold">Cartella clinica</h1>
+        <AiSummaryButton />
+      </div>
+
+      <AiSummaryCard />
 
       <Card className="border-amber-500/30 bg-amber-500/5">
         <CardContent className="pt-4 text-xs text-muted-foreground">
@@ -122,48 +190,124 @@ function CartellaPage() {
 
       <ProfileCard profile={profile} onSave={(i) => upsertProfile.mutate(i)} saving={upsertProfile.isPending} />
 
-      <AddLabForm onAdd={(i) => addLab.mutate(i)} adding={addLab.isPending} />
+      <AddLabForm onAdd={(i) => addLab.mutate(i)} adding={addLab.isPending} geneticContext={geneticContext} />
 
-      {/* Esami inseriti, per analita */}
-      {grouped.length === 0 ? (
+      {/* Esami inseriti, raggruppati per analisi (data di prelievo) */}
+      {analyses.length === 0 ? (
         <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">Nessun esame inserito. Aggiungine uno qui sopra (es. la Lp(a) dopo il prelievo).</CardContent></Card>
       ) : (
-        grouped.map(([analyte, rows]) => {
-          const def = CATALOG.find((c) => c.label === analyte);
-          const ctx = geneticContext(rows[0].geneticKey, def?.geneticKind);
-          return (
-            <Card key={analyte}>
-              <CardContent className="pt-4 space-y-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="font-semibold text-sm">{analyte}</span>
-                  {rows[0].refText && <span className="text-[11px] text-muted-foreground">rif: {rows[0].refText}</span>}
-                </div>
-                {ctx && (
-                  <p className="text-[11px] text-primary bg-primary/5 rounded px-2 py-1 leading-snug">🧬 {ctx}</p>
-                )}
-                <div className="rounded-lg border border-border/60 divide-y divide-border/60">
-                  {rows.map((r) => {
-                    const st = rangeStatus(r.value, r.refLow, r.refHigh);
-                    const stCls = st === 'high' || st === 'low' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400' : st === 'in' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-secondary text-muted-foreground';
-                    return (
-                      <div key={r.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                        <div className="flex items-baseline gap-2 flex-wrap">
-                          <span className="font-mono font-semibold">{r.value} <span className="text-xs font-normal text-muted-foreground">{r.unit}</span></span>
-                          {st && <Badge className={`text-[10px] ${stCls}`}>{st === 'high' ? 'sopra range' : st === 'low' ? 'sotto range' : 'nel range'}</Badge>}
-                          <span className="text-xs text-muted-foreground">{fmtDate(r.measuredAt)}</span>
-                          {r.notes && <span className="text-xs text-muted-foreground italic">· {r.notes}</span>}
-                        </div>
-                        <button onClick={() => delLab.mutate(r.id)} className="text-muted-foreground hover:text-red-500 text-xs shrink-0" title="Elimina">✕</button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })
+        analyses.map((a) => (
+          <AnalysisCard
+            key={a.day}
+            day={a.day}
+            rows={a.rows}
+            outOfRange={a.outOfRange}
+            measurable={a.measurable}
+            geneticContext={geneticContext}
+            onDelete={(id) => delLab.mutate(id)}
+          />
+        ))
       )}
     </div>
+    </AiSummaryProvider>
+  );
+}
+
+function AnalysisCard({ day, rows, outOfRange, measurable, geneticContext, onDelete }: {
+  day: string; rows: any[]; outOfRange: number; measurable: number;
+  geneticContext: (key?: string, kind?: Kind) => string | null; onDelete: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = useState(true); // default compatto: solo il titolo
+  const toggle = (id: string) =>
+    setExpanded((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+
+  return (
+    <Card>
+      <CardHeader
+        className="flex-row items-center justify-between space-y-0 pb-3 cursor-pointer select-none"
+        role="button"
+        tabIndex={0}
+        aria-expanded={!collapsed}
+        onClick={() => setCollapsed((c) => !c)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed((c) => !c); } }}
+      >
+        <div>
+          <CardTitle className="text-base">Analisi del {fmtDate(day)}</CardTitle>
+          <CardDescription>{rows.length} {rows.length === 1 ? 'esame' : 'esami'}</CardDescription>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {outOfRange > 0 ? (
+            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400">{outOfRange} fuori range</Badge>
+          ) : measurable > 0 ? (
+            <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">nel range</Badge>
+          ) : null}
+          <span className={`text-muted-foreground text-xs transition-transform ${collapsed ? '' : 'rotate-90'}`} aria-hidden>▶</span>
+        </div>
+      </CardHeader>
+      {!collapsed && (
+      <CardContent className="pt-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Esame</TableHead>
+              <TableHead className="text-right">Valore</TableHead>
+              <TableHead>Riferimento</TableHead>
+              <TableHead className="w-8" aria-label="Azioni" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => {
+              const def = CATALOG.find((c) => c.label === r.analyte);
+              const ctx = geneticContext(r.geneticKey ?? def?.geneticKey, def?.geneticKind);
+              const st = rangeStatus(r.value, r.refLow, r.refHigh);
+              const isOut = st === 'high' || st === 'low';
+              const open = expanded.has(r.id);
+              return (
+                <Fragment key={r.id}>
+                  <TableRow
+                    className={ctx ? 'cursor-pointer' : ''}
+                    onClick={ctx ? () => toggle(r.id) : undefined}
+                    aria-expanded={ctx ? open : undefined}
+                  >
+                    <TableCell className="font-medium">
+                      <span className="flex items-center gap-1.5">
+                        {r.analyte}
+                        {ctx && <span className="text-primary text-xs" title="Confronto con il DNA">🧬</span>}
+                      </span>
+                      {r.notes && <span className="block text-xs text-muted-foreground italic">{r.notes}</span>}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <span className={`font-mono font-semibold ${isOut ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                        {st === 'high' ? '▲ ' : st === 'low' ? '▼ ' : ''}{r.value}
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground ml-1">{r.unit}</span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-normal">{r.refText || '—'}</TableCell>
+                    <TableCell>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(r.id); }}
+                        className="text-muted-foreground hover:text-red-500 text-xs"
+                        title="Elimina"
+                        aria-label={`Elimina ${r.analyte}`}
+                      >✕</button>
+                    </TableCell>
+                  </TableRow>
+                  {ctx && open && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={4} className="bg-primary/5 text-[11px] text-primary leading-snug whitespace-normal">
+                        🧬 {ctx}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+      )}
+    </Card>
   );
 }
 
@@ -200,17 +344,22 @@ function ProfileCard({ profile, onSave, saving }: { profile: any; onSave: (i: an
       <CardContent>
         {edit ? (
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
-            <Field label="Nome"><input className="inp" value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></Field>
-            <Field label="Data di nascita"><input type="date" className="inp" value={f.birthDate} onChange={(e) => setF({ ...f, birthDate: e.target.value })} /></Field>
+            <Field label="Nome"><Input value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></Field>
+            <Field label="Data di nascita"><Input type="date" value={f.birthDate} onChange={(e) => setF({ ...f, birthDate: e.target.value })} /></Field>
             <Field label="Sesso">
-              <select className="inp" value={f.sex} onChange={(e) => setF({ ...f, sex: e.target.value })}>
-                <option value="">—</option><option value="MALE">Maschile</option><option value="FEMALE">Femminile</option><option value="OTHER">Altro</option>
-              </select>
+              <Select value={f.sex || null} onValueChange={(val) => setF({ ...f, sex: val ?? '' })} items={SEX_LABEL}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MALE">Maschile</SelectItem>
+                  <SelectItem value="FEMALE">Femminile</SelectItem>
+                  <SelectItem value="OTHER">Altro</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
-            <Field label="Gruppo sanguigno"><input className="inp" placeholder="es. 0+" value={f.bloodType} onChange={(e) => setF({ ...f, bloodType: e.target.value })} /></Field>
-            <Field label="Altezza (cm)"><input type="number" className="inp" value={f.heightCm} onChange={(e) => setF({ ...f, heightCm: e.target.value })} /></Field>
-            <Field label="Peso (kg)"><input type="number" className="inp" value={f.weightKg} onChange={(e) => setF({ ...f, weightKg: e.target.value })} /></Field>
-            <div className="sm:col-span-2"><Field label="Note"><textarea className="inp" rows={2} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field></div>
+            <Field label="Gruppo sanguigno"><Input placeholder="es. 0+" value={f.bloodType} onChange={(e) => setF({ ...f, bloodType: e.target.value })} /></Field>
+            <Field label="Altezza (cm)"><Input type="number" value={f.heightCm} onChange={(e) => setF({ ...f, heightCm: e.target.value })} /></Field>
+            <Field label="Peso (kg)"><Input type="number" value={f.weightKg} onChange={(e) => setF({ ...f, weightKg: e.target.value })} /></Field>
+            <div className="sm:col-span-2"><Field label="Note"><Textarea rows={2} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field></div>
             <div className="sm:col-span-2 flex gap-2">
               <Button size="sm" onClick={save} disabled={saving}>Salva</Button>
               <Button size="sm" variant="outline" onClick={() => setEdit(false)}>Annulla</Button>
@@ -234,17 +383,26 @@ function ProfileCard({ profile, onSave, saving }: { profile: any; onSave: (i: an
   );
 }
 
-function AddLabForm({ onAdd, adding }: { onAdd: (i: any) => void; adding: boolean }) {
+function AddLabForm({ onAdd, adding, geneticContext }: { onAdd: (i: any) => void; adding: boolean; geneticContext: (key?: string, kind?: Kind) => string | null }) {
   const [open, setOpen] = useState(false);
-  const [catKey, setCatKey] = useState('lpa');
+  const [catKey, setCatKey] = useState('coltot');
   const [custom, setCustom] = useState({ analyte: '', unit: '' });
   const [v, setV] = useState({ value: '', date: new Date().toISOString().slice(0, 10), notes: '' });
   const def = CATALOG.find((c) => c.key === catKey);
   const isCustom = catKey === 'custom';
+  const unit = isCustom ? custom.unit.trim() : def?.unit ?? '';
+  const dna = !isCustom && def?.geneticKey ? geneticContext(def.geneticKey, def.geneticKind) : null;
+  const canSubmit = (isCustom ? custom.analyte.trim() : true) && v.value.trim() !== '';
+
+  const reset = () => {
+    setV({ value: '', date: new Date().toISOString().slice(0, 10), notes: '' });
+    setCustom({ analyte: '', unit: '' });
+    setCatKey('coltot');
+    setOpen(false);
+  };
 
   const submit = () => {
     const analyte = isCustom ? custom.analyte.trim() : def!.label;
-    const unit = isCustom ? custom.unit.trim() : def!.unit;
     if (!analyte || !v.value) return;
     onAdd({
       analyte, value: parseFloat(v.value), unit,
@@ -255,37 +413,80 @@ function AddLabForm({ onAdd, adding }: { onAdd: (i: any) => void; adding: boolea
       geneticKey: isCustom ? null : def!.geneticKey ?? null,
       notes: v.notes || null,
     });
-    setV({ value: '', date: new Date().toISOString().slice(0, 10), notes: '' });
-    setCustom({ analyte: '', unit: '' });
-    setOpen(false);
+    reset();
   };
 
-  if (!open) return <Button variant="outline" size="sm" onClick={() => setOpen(true)}>+ Aggiungi esame</Button>;
+  if (!open)
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full rounded-lg border border-dashed border-border py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground hover:bg-secondary/40"
+      >
+        + Aggiungi esame
+      </button>
+    );
+
   return (
-    <Card>
-      <CardContent className="pt-4 space-y-3">
-        <div className="grid sm:grid-cols-2 gap-3 text-sm">
-          <Field label="Esame">
-            <select className="inp" value={catKey} onChange={(e) => setCatKey(e.target.value)}>
-              {CATALOG.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
-              <option value="custom">Altro (personalizzato)…</option>
-            </select>
-          </Field>
-          {isCustom ? (
-            <>
-              <Field label="Nome esame"><input className="inp" value={custom.analyte} onChange={(e) => setCustom({ ...custom, analyte: e.target.value })} /></Field>
-              <Field label="Unità"><input className="inp" value={custom.unit} onChange={(e) => setCustom({ ...custom, unit: e.target.value })} /></Field>
-            </>
-          ) : (
-            <Field label="Riferimento"><div className="inp bg-secondary/40 text-muted-foreground">{def?.refText ?? '—'}</div></Field>
-          )}
-          <Field label={`Valore${!isCustom && def ? ` (${def.unit})` : ''}`}><input type="number" className="inp" value={v.value} onChange={(e) => setV({ ...v, value: e.target.value })} /></Field>
-          <Field label="Data"><input type="date" className="inp" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></Field>
-          <div className="sm:col-span-2"><Field label="Note (opz.)"><input className="inp" value={v.notes} onChange={(e) => setV({ ...v, notes: e.target.value })} /></Field></div>
+    <Card className="border-primary/30">
+      <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+        <div>
+          <CardTitle className="text-base">Nuovo esame</CardTitle>
+          <CardDescription>Inserisci un valore misurato da confrontare con il DNA</CardDescription>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" onClick={submit} disabled={adding}>Aggiungi</Button>
-          <Button size="sm" variant="outline" onClick={() => setOpen(false)}>Annulla</Button>
+        <button onClick={reset} className="text-muted-foreground hover:text-foreground text-lg leading-none" title="Chiudi" aria-label="Chiudi">✕</button>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Esame: scelta primaria, a piena larghezza */}
+        <Field label="Esame">
+          <Select value={catKey} onValueChange={(val) => setCatKey(typeof val === 'string' ? val : 'coltot')} items={CATALOG_ITEMS}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {CATALOG_GROUPS.map((g) => (
+                <SelectGroup key={g}>
+                  <SelectGroupLabel>{g}</SelectGroupLabel>
+                  {CATALOG.filter((c) => c.group === g).map((c) => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
+                </SelectGroup>
+              ))}
+              <SelectGroup>
+                <SelectGroupLabel>Altro</SelectGroupLabel>
+                <SelectItem value="custom">Altro (personalizzato)…</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </Field>
+
+        {isCustom ? (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Nome esame"><Input placeholder="es. TSH" value={custom.analyte} onChange={(e) => setCustom({ ...custom, analyte: e.target.value })} /></Field>
+            <Field label="Unità"><Input placeholder="es. mIU/L" value={custom.unit} onChange={(e) => setCustom({ ...custom, unit: e.target.value })} /></Field>
+          </div>
+        ) : (
+          def?.refText && (
+            <p className="text-xs text-muted-foreground">
+              Riferimento <span className="text-foreground">{def.refText}</span>
+            </p>
+          )
+        )}
+
+        {dna && (
+          <p className="text-[11px] text-primary bg-primary/5 rounded px-2 py-1.5 leading-snug">🧬 {dna}</p>
+        )}
+
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field label="Valore">
+            <div className="relative">
+              <Input type="number" className={unit ? 'pr-14' : ''} placeholder="0" value={v.value} onChange={(e) => setV({ ...v, value: e.target.value })} />
+              {unit && <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">{unit}</span>}
+            </div>
+          </Field>
+          <Field label="Data del prelievo"><Input type="date" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></Field>
+        </div>
+
+        <Field label="Note (opzionale)"><Input placeholder="es. laboratorio, a digiuno…" value={v.notes} onChange={(e) => setV({ ...v, notes: e.target.value })} /></Field>
+
+        <div className="flex gap-2 pt-1">
+          <Button size="sm" onClick={submit} disabled={adding || !canSubmit}>Aggiungi esame</Button>
+          <Button size="sm" variant="outline" onClick={reset}>Annulla</Button>
         </div>
       </CardContent>
     </Card>
@@ -293,7 +494,7 @@ function AddLabForm({ onAdd, adding }: { onAdd: (i: any) => void; adding: boolea
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="flex flex-col gap-1"><span className="text-xs text-muted-foreground">{label}</span>{children}</label>;
+  return <div className="flex flex-col gap-1.5"><Label>{label}</Label>{children}</div>;
 }
 function Info({ label, value }: { label: string; value?: string | null }) {
   return <div><div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div><div className="text-sm">{value || '—'}</div></div>;

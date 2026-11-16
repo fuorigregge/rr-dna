@@ -112,6 +112,8 @@ export class AiService {
         return this.buildAncestryPrompt(vcfFileId);
       case 'salute':
         return this.buildSalutePrompt(vcfFileId);
+      case 'cartella':
+        return this.buildCartellaPrompt(vcfFileId);
       case 'overview':
         return this.buildOverviewPrompt(vcfFileId);
       default:
@@ -323,6 +325,116 @@ Concentrati su:
 - Stile di vita: nicotina/alcol — messaggi netti e onesti.
 - Invecchiamento/healthspan: se pertinente, una sezione "## Invecchiamento" che dica chiaro che il DNA non offre scorciatoie antiaging — i fattori veri sono universali (non fumare, attività fisica, sonno, dieta mediterranea, salute cardiometabolica) — e che il genotipo li RAFFINA (es. CHRNA5 → non fumare; MTHFR → omocisteina; vitamina D). Smonta l'hype non supportato dal genotipo (NMN, resveratrolo, metformina nei sani, rapamicina). NON proporre integratori longevità.
 - Chiudi NON con un elenco di acquisti, ma con "cosa misurare / cosa discutere col medico".
+- IMPORTANTE: usa le lettere accentate italiane (à, è, ì, ò, ù), MAI apostrofi al posto degli accenti.`;
+  }
+
+  private async buildCartellaPrompt(vcfFileId: string): Promise<string> {
+    // Referto/i inseriti nella cartella, raggruppati per analisi (data del prelievo).
+    // Il valore aggiunto è il confronto predetto-vs-misurato: gli esami con geneticKey
+    // sono agganciati al finding genomico (PRS o tratto) del soggetto.
+    const labs = await this.prisma.labResult.findMany({
+      where: { vcfFileId },
+      orderBy: [{ measuredAt: 'desc' }, { analyte: 'asc' }],
+    });
+    if (labs.length === 0) {
+      throw new Error('Nessun esame inserito nella cartella: aggiungi almeno un referto.');
+    }
+
+    const profile = await this.prisma.patientProfile.findUnique({ where: { vcfFileId } });
+    const age = profile?.birthDate
+      ? Math.floor((Date.now() - new Date(profile.birthDate).getTime()) / 3.15576e10)
+      : null;
+    const SEX_IT: Record<string, string> = { MALE: 'maschile', FEMALE: 'femminile', OTHER: 'altro' };
+    const profiloStr = [
+      age != null ? `${age} anni` : null,
+      profile?.sex ? `sesso ${SEX_IT[profile.sex] ?? profile.sex.toLowerCase()}` : null,
+    ].filter(Boolean).join(', ') || 'non specificato';
+
+    const statusOf = (v: number, lo: number | null, hi: number | null): string => {
+      if (lo != null && v < lo) return 'sotto range';
+      if (hi != null && v > hi) return 'sopra range';
+      if (lo != null || hi != null) return 'nel range';
+      return 'nessun range di riferimento';
+    };
+
+    // Raggruppa per analisi (data), dalla più recente
+    const byDay = new Map<string, typeof labs>();
+    for (const l of labs) {
+      const day = l.measuredAt.toISOString().slice(0, 10);
+      if (!byDay.has(day)) byDay.set(day, []);
+      byDay.get(day)!.push(l);
+    }
+    const analisi = [...byDay.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([data, rows]) => ({
+        data,
+        esami: rows.map((r) => ({
+          analita: r.analyte,
+          valore: r.value,
+          unita: r.unit,
+          riferimento: r.refText
+            ?? (r.refLow != null || r.refHigh != null ? `${r.refLow ?? ''}–${r.refHigh ?? ''}` : null),
+          stato: statusOf(r.value, r.refLow, r.refHigh),
+          geneticKey: r.geneticKey ?? null,
+        })),
+      }));
+    const fuoriRange = labs.filter((l) => {
+      const s = statusOf(l.value, l.refLow, l.refHigh);
+      return s === 'sopra range' || s === 'sotto range';
+    }).length;
+
+    // Contesto DNA per gli analiti agganciati a un finding genomico. Le chiavi che
+    // iniziano con "rs" sono tratti (pannello), le altre sono traitKey dei PRS.
+    const keys = [...new Set(labs.map((l) => l.geneticKey).filter((k): k is string => !!k))];
+    const rsKeys = keys.filter((k) => k.startsWith('rs'));
+    const prsKeys = keys.filter((k) => !k.startsWith('rs'));
+
+    const prs = prsKeys.length
+      ? await this.prisma.prsResult.findMany({ where: { vcfFileId, traitKey: { in: prsKeys } } })
+      : [];
+    const traits = rsKeys.length
+      ? await this.prisma.traitPanelResult.findMany({ where: { vcfFileId, rsId: { in: rsKeys } } })
+      : [];
+
+    const dnaContext = [
+      ...prs.map((p) => ({
+        geneticKey: p.traitKey, tipo: 'PRS', tratto: p.trait,
+        percentile: p.percentile != null ? Math.round(p.percentile) : null,
+        zScore: p.zScore != null ? +p.zScore.toFixed(2) : null,
+        interpretazione: p.interpretation,
+      })),
+      ...traits.map((t) => ({
+        geneticKey: t.rsId, tipo: 'tratto', gene: t.gene, tratto: t.trait,
+        stato: t.state, genotipo: t.genotype, interpretazione: t.interpretation,
+      })),
+    ];
+
+    return `Sei un consulente che spiega, a un programmatore (non medico), gli esami del sangue della sua cartella clinica, mettendoli in relazione con ciò che il SUO DNA predice. Rispondi in italiano e in formato Markdown.
+
+ETHOS OBBLIGATORIO — onestà, niente allarmismi:
+- È un referto INFORMATIVO, NON una diagnosi né una prescrizione. Non dire mai "hai la malattia X" o "prendi il farmaco Y".
+- I valori fuori range vanno contestualizzati (di quanto? isolato o ripetuto? clinicamente rilevante o marginale?), non drammatizzati. Molti sforamenti lievi sono benigni.
+- Il confronto DNA↔sangue è il valore aggiunto: un PRS alto è una PREDISPOSIZIONE relativa, il valore misurato è il DATO REALE. Quando concordano, rafforzano; quando divergono, spiega che il misurato pesa di più (il fenotipo batte il genotipo).
+- Chiudi sempre con "cosa discutere/monitorare col medico", non con conclusioni cliniche.
+
+FORMATO:
+1. PRIMO PARAGRAFO: riassunto breve (2-3 frasi) del quadro degli esami, senza titolo né heading markdown.
+2. Dopo una riga vuota, il DETTAGLIO con heading markdown: ## Valori fuori range, ## Confronto con il DNA, ## Andamento nel tempo, ## Da discutere col medico. Ometti una sezione se non ha contenuto.
+
+DATI DEL SOGGETTO: ${profiloStr}.
+
+ESAMI per analisi (data del prelievo), ${labs.length} valori totali su ${analisi.length} analisi, ${fuoriRange} fuori range. Ogni esame ha stato (nel range / sopra / sotto) e, se agganciato, un "geneticKey" che rimanda al contesto DNA sotto:
+${JSON.stringify(analisi, null, 2)}
+
+CONTESTO DNA (predizione genomica del soggetto) per gli analiti agganciati — usa "geneticKey" per collegarlo all'esame corrispondente. Per i PRS il percentile è relativo alla popolazione europea; per i tratti lo stato è il genotipo reale:
+${dnaContext.length ? JSON.stringify(dnaContext, null, 2) : 'Nessun esame agganciato a un finding genomico.'}
+
+Concentrati su:
+- VALORI FUORI RANGE: elencali con il valore e di quanto sfora; spiega in modo cauto cosa può indicare e se conviene ricontrollarlo. Distingui gli sforamenti marginali da quelli rilevanti.
+- CONFRONTO CON IL DNA: per ogni esame con geneticKey, confronta il valore misurato con la predizione genetica (es. LDL/Lp(a) misurata vs PRS lipidico; ferritina vs HFE; vitamina D vs PRS/tratto; omocisteina vs MTHFR; B12 vs FUT2). Di' esplicitamente se il dato conferma o smentisce la predisposizione, ricordando che il valore misurato prevale.
+- ANDAMENTO NEL TEMPO: se lo stesso analita compare in più analisi, commenta il trend (stabile, in aumento, in calo) e se è degno di nota.
+- DA DISCUTERE COL MEDICO: 2-4 punti concreti (cosa monitorare, cosa eventualmente ripetere), senza prescrivere.
+- NON elencare meccanicamente tutti i ${labs.length} valori: dai priorità a ciò che si discosta e a ciò che ha un correlato genetico; accorpa i normali senza dettagliarli uno per uno.
 - IMPORTANTE: usa le lettere accentate italiane (à, è, ì, ò, ù), MAI apostrofi al posto degli accenti.`;
   }
 
