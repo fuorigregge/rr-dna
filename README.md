@@ -158,7 +158,7 @@ gitignorati; nel repo c'è solo `pgs_reference.json`, le distribuzioni di popola
 | Server | 3060 |
 | Worker API | 8000 |
 | PostgreSQL | 5432 |
-| Redis | 6379 |
+| Redis | 6382 |
 
 ## Comandi utili
 

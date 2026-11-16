@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 @Injectable()
 export class RedisService extends Redis implements OnModuleDestroy {
   constructor() {
-    super(process.env.REDIS_URL || 'redis://localhost:6379');
+    super(process.env.REDIS_URL || 'redis://localhost:6382');
   }
 
   async onModuleDestroy() {

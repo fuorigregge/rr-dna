@@ -315,7 +315,7 @@ TRAIT_PANEL = [
         "category": "APPEARANCE", "chrom": "5", "pos": 33951588, "ref": "C",
         "interpretation": {
             "REFERENCE": "Genotipo CC (ancestrale): pigmentazione piu' scura a questo locus; frequente fuori Europa.",
-            "CARRIED": "Porti l'allele G (SLC45A2 Phe374Leu): allele di pelle/capelli/occhi piu' CHIARI, quasi fissato in Europa (>90%). In eterozigosi contribuisce parzialmente.",
+            "CARRIED": "Porti l'allele G (SLC45A2 Leu374Phe): allele di pelle/capelli/occhi piu' CHIARI, quasi fissato in Europa (>90%). In eterozigosi contribuisce parzialmente.",
         },
     },
     {

@@ -42,7 +42,7 @@ import { CartellaModule } from './modules/cartella/cartella.module';
     CartellaModule,
     BullModule.forRootAsync({
       useFactory: () => {
-        const url = new URL(process.env.REDIS_URL || 'redis://localhost:6379');
+        const url = new URL(process.env.REDIS_URL || 'redis://localhost:6382');
         return {
           connection: {
             host: url.hostname,

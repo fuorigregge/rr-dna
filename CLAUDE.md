@@ -61,7 +61,7 @@ cd apps/dna-worker && pytest            # test worker Python
 | Server      | 3060  |
 | Worker API  | 8000  |
 | PostgreSQL  | 5432  |
-| Redis       | 6379  |
+| Redis       | 6382  |
 
 ## Variabili ambiente
 

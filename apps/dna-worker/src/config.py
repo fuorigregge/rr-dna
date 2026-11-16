@@ -10,6 +10,6 @@ if _env_file.exists():
             os.environ.setdefault(key.strip(), value.strip())
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://rr:rr@localhost:5432/rr_dna")
-REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6382")
 API_PORT = int(os.environ.get("API_PORT", "8000"))
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "1000"))
